@@ -70,7 +70,7 @@ class WikiPage(Node):
 
         links = {x.get('href') for x in body.find_all('a')}
         links.discard(None)
-        links = [x for x in links if x.startswith('/wiki') and ('Help:' not in x) and ('Special:' not in x) and ('File:' not in x)]
+        links = [x for x in links if '/wiki' in x and ('Help:' not in x) and ('Special:' not in x) and ('File:' not in x)]
 
         return [WikiPage(link, parent=self, path_cost=self.path_cost + 1) for link in links]
 
