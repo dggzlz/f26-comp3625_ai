@@ -2,6 +2,7 @@ from gymnasium.envs.classic_control.cartpole import CartPoleEnv
 from agent import CartPoleAgent
 import numpy as np
 np.set_printoptions(precision=2)
+from scipy.optimize import minimize
 
 
 def test_agent(parameters, render=False):
@@ -30,11 +31,56 @@ def test_agent(parameters, render=False):
     print(f'tested parameters: {parameters}, cumulative reward: {cumulative_reward}')
     return cumulative_reward
 
-
-
 # watch how an agent with randomly-initialized parameters does:
-test_agent(parameters=np.random.uniform(-1, 1, size=5), render=True)
+# test_agent(parameters=np.random.uniform(-1, 1, size=5), render=True)
 
 
 # Write a search to find the best parameters for the CartPoleAgent.
 # YOUR CODE HERE
+def mysim_annealing(f, params, n=200, T=1000):
+    current = params
+    multiplier = 0.95
+    best_score = 0
+    for _ in range(n):
+        # T decreases by the multiplier
+        T *= multiplier
+        
+        # flip a coin
+        choice = np.random.rand(len(params))
+        if np.random.random() > .50:
+            successor = current - choice
+        else:
+            successor = current + choice
+
+        # using loss function (f(x)) to calculate delta_e
+        f_succ = f(successor)
+        f_curr = f(current)
+        delta_e = f_succ - f_curr
+        
+        if delta_e < 0:
+            current = successor
+            best_score = f_succ    
+        elif np.random.random() < np.exp(((-delta_e)/T)): # accept successor with a chance of e^(-ΔE/T)
+            current = successor
+            best_score = f_succ
+
+    return (current, best_score)
+
+def func_wrapper(parameters):
+    return -test_agent(parameters)
+
+# result, score = mysim_annealing(func_wrapper, params=np.random.uniform(-1, 1, size=5), T=100)
+# ================================
+#result = minimize(func_wrapper, x0=np.random.uniform(-1, 1, size=5), method="CG")
+# best = -result.fun
+# for _ in range(100):
+#     r = minimize(func_wrapper, params=np.random.uniform(-1, 1, size=5), method="CG")
+#     if (-r.fun) > best:
+#         best = -r.fun
+#         result = r
+#         print("\n", "="*50, "FOUND A BETTER ONE", "="*50, "\n")
+
+# print("FUN:", result.fun)
+# ================================
+print(f"Results: {result}; Score: {score}")
+test_agent(result, render=True)
