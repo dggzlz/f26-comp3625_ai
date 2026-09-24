@@ -3,7 +3,7 @@ from agent import CartPoleAgent
 import numpy as np
 np.set_printoptions(precision=2)
 from scipy.optimize import minimize
-
+import matplotlib.pyplot as plt
 
 def test_agent(parameters, render=False):
     """
@@ -41,6 +41,7 @@ def mysim_annealing(f, params, n=200, T=1000):
     current = params
     multiplier = 0.95
     best_score = 0
+    best_history = []
     for _ in range(n):
         # T decreases by the multiplier
         T *= multiplier
@@ -62,14 +63,27 @@ def mysim_annealing(f, params, n=200, T=1000):
             best_score = f_succ    
         elif np.random.random() < np.exp(((-delta_e)/T)): # accept successor with a chance of e^(-ΔE/T)
             current = successor
-            best_score = f_succ
+            best_score = f_succ 
 
-    return (current, best_score)
+        best_history.append(abs(best_score))
+
+    return (current, best_score, best_history)
 
 def func_wrapper(parameters):
     return -test_agent(parameters)
 
-# result, score = mysim_annealing(func_wrapper, params=np.random.uniform(-1, 1, size=5), T=100)
+result, score, history = mysim_annealing(func_wrapper, params=np.random.uniform(-1, 1, size=5), T=1000)
+
+print(f"Results: {result}; Score: {abs(score)}")
+plt.plot(history)
+plt.title("Simulated Annealing Performance")
+plt.xlabel("Number of Iterations")
+plt.ylabel("Cumulative Reward")
+plt.savefig("performance_plot.png") 
+
+test_agent(result, render=True) 
+
+# OLD via Minimize Function
 # ================================
 #result = minimize(func_wrapper, x0=np.random.uniform(-1, 1, size=5), method="CG")
 # best = -result.fun
@@ -82,5 +96,3 @@ def func_wrapper(parameters):
 
 # print("FUN:", result.fun)
 # ================================
-print(f"Results: {result}; Score: {score}")
-test_agent(result, render=True)
