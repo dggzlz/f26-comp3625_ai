@@ -69,7 +69,7 @@ def mysim_annealing(f, params, n=200, T=1000):
 def func_wrapper(parameters):
     return -test_agent(parameters)
 
-# result, score = mysim_annealing(func_wrapper, params=np.random.uniform(-1, 1, size=5), T=100)
+result, score = mysim_annealing(func_wrapper, params=np.random.uniform(-1, 1, size=5), T=100)
 # ================================
 #result = minimize(func_wrapper, x0=np.random.uniform(-1, 1, size=5), method="CG")
 # best = -result.fun
@@ -84,3 +84,5 @@ def func_wrapper(parameters):
 # ================================
 print(f"Results: {result}; Score: {score}")
 test_agent(result, render=True)
+
+
