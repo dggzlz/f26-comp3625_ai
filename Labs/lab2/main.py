@@ -4,6 +4,11 @@ import numpy as np
 np.set_printoptions(precision=2)
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
+from pathlib import Path
+
+# Directory where main.py is located
+script_dir = Path(__file__).parent
+file_path = script_dir / "performance_plot.png"
 
 def test_agent(parameters, render=False):
     """
@@ -37,12 +42,26 @@ def test_agent(parameters, render=False):
 
 # Write a search to find the best parameters for the CartPoleAgent.
 # YOUR CODE HERE
-def mysim_annealing(f, params, n=200, T=1000):
+def mysim_annealing(f, params, iters=500, T=1000):
+    """
+    Search Algorithm using simulated annealing
+    
+    Args:  
+        f (function): the loss function that returns the score for the search
+        params (np.array): the initial parameters to pass to the function
+        iters (int): number of iterations for the search
+        T (int): a integer that decreases to 0 over n iterations
+    
+    Returns:
+        a tuple with the best parameters, the cumulative reward, 
+        and a list of the history of the rewards
+    """
     current = params
     multiplier = 0.95
     best_score = 0
     best_history = []
-    for _ in range(n):
+    f_curr = f(current)
+    for _ in range(iters):
         # T decreases by the multiplier
         T *= multiplier
         
@@ -55,7 +74,6 @@ def mysim_annealing(f, params, n=200, T=1000):
 
         # using loss function (f(x)) to calculate delta_e
         f_succ = f(successor)
-        f_curr = f(current)
         delta_e = f_succ - f_curr
         
         if delta_e < 0:
@@ -63,8 +81,9 @@ def mysim_annealing(f, params, n=200, T=1000):
             best_score = f_succ    
         elif np.random.random() < np.exp(((-delta_e)/T)): # accept successor with a chance of e^(-ΔE/T)
             current = successor
-            best_score = f_succ 
-
+            best_score = f_succ
+        
+        f_curr = f_succ
         best_history.append(abs(best_score))
 
     return (current, best_score, best_history)
@@ -72,14 +91,14 @@ def mysim_annealing(f, params, n=200, T=1000):
 def func_wrapper(parameters):
     return -test_agent(parameters)
 
-result, score, history = mysim_annealing(func_wrapper, params=np.random.uniform(-1, 1, size=5), T=1000)
+result, score, history = mysim_annealing(func_wrapper, params=np.random.uniform(-1, 1, size=5))
 
 print(f"Results: {result}; Score: {abs(score)}")
 plt.plot(history)
 plt.title("Simulated Annealing Performance")
 plt.xlabel("Number of Iterations")
 plt.ylabel("Cumulative Reward")
-plt.savefig("performance_plot.png") 
+plt.savefig(file_path)
 
 test_agent(result, render=True) 
 
