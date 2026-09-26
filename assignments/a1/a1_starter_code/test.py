@@ -10,9 +10,9 @@ translator = UniversalTranslator(n_dim=10)
 rng = np.random.default_rng()
 settings=rng.random(size=2)
 
-reward = 0
-translated_string = translator.translate(settings)
-print(translated_string)
+# reward = 0
+# translated_string = translator.translate(settings)
+# print(translated_string)
 # segments = translated_string.split()
 # for code in segments: 
 #   if code.isalpha(): 
@@ -28,3 +28,12 @@ print(translated_string)
 # print(f"Percentage of Words Decoded: {(reward / len(segments)) * 100}")
 
 # 76% - [0.14726682, 0.5843318]
+current = [0.2, 0.4]
+choice = np.random.rand(len(settings)) * 0.085
+print(choice) 
+if np.random.random() > .5:
+  next = current - choice
+else: 
+  next = current + choice  
+
+print(next)

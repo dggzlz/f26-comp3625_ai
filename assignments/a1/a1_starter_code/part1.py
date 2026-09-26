@@ -72,7 +72,7 @@ best_rate = 0
 best_settings = None
 for i in range(20): 
   settings, rate = sim_annealing(func_wrapper, settings=rng.random(size=2), n=500, T=1000)
-  print(f"Attempt {i + 1} Decode rate: {abs(rate) * 100}")
+  print(f"Attempt {i + 1} Settings: {settings} Decode rate: {abs(rate) * 100}")
   if rate > best_rate: 
     best_rate = rate 
     best_settings = settings 
