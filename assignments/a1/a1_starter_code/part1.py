@@ -33,19 +33,16 @@ Purpose: Takes in an array of two values between 0 and 1 and passes it through t
 
 def sim_annealing(f, settings, n=100, T=1000): 
   current = settings 
-  multiplier = 0.89
+  multiplier = 0.99
   best_rate = 0
   best_settings = [0] * len(settings)
 
   for _ in range(n): 
     T *= multiplier 
 
-    #flip coin, when adding to choice, must be within 0 - 1 bounds 
-    choice = np.random.rand(len(settings)) * 0.085 # makes the numbers smaller so that they don't overshoot the 0 - 1 bound
-    if np.random.random() > .5:
-      next = current - choice
-    else: 
-      next = current + choice  
+    #Indpendently roll a random number to add or subtract for each knob
+    choice = np.random.uniform(-0.1, 0.1, size=len(settings)) # small adjustments so that they don't overshoot the 0 - 1 bound
+    next = current + choice
     #Ensures that the bounds for each setting stay within 0 - 1
     next = np.clip(next, 0.0, 1.0)
 
@@ -61,13 +58,24 @@ def sim_annealing(f, settings, n=100, T=1000):
 
     if delta_e > 0: 
       current = next 
-      best_rate = f_next 
-    elif np.random.random() > np.exp(((-delta_e)/T)): 
+    elif np.random.random() < np.exp(((delta_e)/T)): 
       current = next  
 
   return(best_settings, best_rate) 
 
-settings, rate = sim_annealing(func_wrapper, settings=rng.random(size=2), n=100, T=1000)
-print(translator.translate(settings))
-print(settings)
-print(abs(rate) * 100)
+# settings, rate = sim_annealing(func_wrapper, settings=rng.random(size=2), n=100, T=1000)
+# print(translator.translate(settings))
+# print(settings)
+# print(abs(rate) * 100)
+
+best_rate = 0
+best_settings = None
+for i in range(20): 
+  settings, rate = sim_annealing(func_wrapper, settings=rng.random(size=2), n=500, T=1000)
+  print(f"Attempt {i + 1} Decode rate: {abs(rate) * 100}")
+  if rate > best_rate: 
+    best_rate = rate 
+    best_settings = settings 
+
+print(f"Best Rate: {best_rate * 100}")
+print(f"Best Settings: {best_settings}")

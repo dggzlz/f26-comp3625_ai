@@ -3,10 +3,10 @@ import numpy as np
 
 
 # create the UniversalTranslator object, with 10 knobs
-translator = UniversalTranslator(n_dim=10)
+translator = UniversalTranslator(n_dim=5)
 
 # demo of how to use the UniversalTranslator object. You can delete these lines
-random_settings = np.random.random(size=10)
+random_settings = np.random.random(size=5)
 translated_string = translator.translate(random_settings)
 print(translated_string)
 
