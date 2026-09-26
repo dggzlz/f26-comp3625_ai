@@ -18,6 +18,7 @@ Purpose: Takes in an array of two values between 0 and 1 and passes it through t
          Iterate through the list and detect which indices are solely letters, therefore a word has been decoded. 
          +1 reward for each word detected out of the entire list, then divide that number by the total to achieve 
          a decode_rate given the setting applied.
+Returns: decode_rate - a float between 0 and 1, representing the percentage of words decoded from the translated message.
   """
   translated_string = translator.translate(settings)
   segments = translated_string.split()
@@ -31,7 +32,19 @@ Purpose: Takes in an array of two values between 0 and 1 and passes it through t
 
   return decode_rate
 
-def sim_annealing(f, settings, n=100, T=1000): 
+def sim_annealing(f, settings, n=100, T=1000):
+  """
+  Name: sim_annealing
+  Parameters: f - function wrapper, settings - array of two values between 0 and 1, n - number of iterations, T - initial temperature
+  Purpose: Implements the simulated annealing algorithm to optimize the settings for the translator. With each iteration,
+           temperature is decreased by 1%. A neighbour (next) is created by independently rolling a random number to add or subtract for each knob,
+           then also clipped to ensure it stays within the bounds of 0 - 1. The neighbour is then evaluated and compared to the current settings,
+           if it is better than the current settings, it is saved as the best settings. Delta_e is the difference in decode rate between the neighbour
+           and the current settings. If the niehgbour is better, it is always accepted, if it is worse, it is accepted with a probability of e^(delta_e/T),
+           so slightly worse moves are more likely to be accepted than worse moves. This allows the search to escape local maxima early and makes bad moves
+           less likely as the temperature decreases.
+  Returns: (best_settings, best_rate) - a tuple containing the best settings found over the whole search and its decode rate.
+  """
   current = settings 
   multiplier = 0.99
   best_rate = 0
