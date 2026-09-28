@@ -16,7 +16,7 @@ class Individual:
     def __init__(self, fitness_score=0):
         fitness_score = fitness_score
         
-    def get_fitness_score(self):
+    def getFitnessScore(self):
         return self.fitness_score
 
 class MyGA:
@@ -37,15 +37,60 @@ class MyGA:
         mutation_type = mutation_type
         mutation_percent_genes = mutation_percent_genes
     
-    def select(self, population):
+    def select(self, pop, target, T):
+        """
+        https://numpy.org/devdocs/reference/random/generated/numpy.random.choice.html
+        """
         
-        return parent1, parent2
+        f_max = max(self.getAllFitnessScores())
+        
+        expo = (self.getAllFitnessScores() - f_max) / T
+        botlz_prob = np.exp(expo) / np.exp(expo).sum()
+        
+        # rand_prob = np.random.uniform(0, 1, size=1)
+        # running_total = 0
+        # selected = []
+        # for i in range(len(pop)):
+        #     running_total += self.boltz_prob(pop[i], T, f_max)
+        #     if rand_prob < running_total:
+        #         selected.append(pop[i])
+        #         rand_prob = np.random.uniform(0, 1, size=1)
+        #         if len(selected) >= target:
+        #             break
+        return np.random.choice(pop, size=target, p=boltz_prob)
+    
+    # def boltz_prob(self, individual, T, f_max):
+        
+    #     f_scaled = individual.getFitnessScore() - f_max
+    #     sum_pop = (self.getAllFitnessScores() - f_max) / T
+    #     botlz_prob = np.exp((f_scaled) / T) / np.exp(sum_pop).sum()
+    #     return botlz_prob
     
     def xover(self):
-        return
+        alpha = np.random.rand()
+        offspring1 = alpha * parent1 + (1 - alpha) * parent2
+        offspring2 = (1 - alpha) * parent1 + alpha * parent2
+        
+        if np.random.rand() > .50:
+            return offspring1
+        return offspring2
+        
+        
 
     def mutate(self):
+        n = len(child)
+        end = np.random.randint(1, n)
+        start = np.random.randint(0, n - end)
+        segment = child[start:start + end]
+        segment = np.random.shuffle(segment)
+        child[start:start + end] = segment
         return
+    
+    def getAllFitnessScore(self):
+        fitness_scores = []
+        for i in range(len(self.pop)):
+            fitness_score.append(self.pop[i].getFitnessScore)
+        return np.array(fitness_scores)
     
     def run(self):
         
