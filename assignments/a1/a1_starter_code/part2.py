@@ -1,5 +1,6 @@
 from translator import UniversalTranslator
 import numpy as np
+import string
 
 def fitness_function(settings):
     """
@@ -14,7 +15,9 @@ def fitness_function(settings):
 
     reward = 0
     for code in segments:
-        if code.isalpha():
+        code_segments = code.strip(string.punctuation)
+    
+        if code_segments.isalpha():
             reward += 1
 
     fitness_score = reward / len(segments) if len(segments) > 0 else 0.0  # avoids division by zero
