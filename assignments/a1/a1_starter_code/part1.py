@@ -51,6 +51,8 @@ def sim_annealing(f, settings, n=100, T=1000):
   best_rate = 0
   best_settings = [0] * len(settings)
 
+  f_curr = f(current) 
+
   for _ in range(n): 
     T *= multiplier 
 
@@ -66,15 +68,16 @@ def sim_annealing(f, settings, n=100, T=1000):
       best_rate = f_next
       best_settings = next
   
-    f_curr = f(current) 
     #Multiplying delta_e by 100 since without it would be a very small number, causing calculations to always accept bad settings
     delta_e = (f_next - f_curr) * 100
 
     if delta_e > 0: 
-      current = next 
+      current = next
+      f_curr = f_next 
     elif np.random.random() < np.exp(((delta_e)/T)): 
-      current = next  
-
+      current = next 
+      f_curr = f_next
+     
   return(best_settings, best_rate) 
 
 # settings, rate = sim_annealing(func_wrapper, settings=rng.random(size=2), n=100, T=1000)
