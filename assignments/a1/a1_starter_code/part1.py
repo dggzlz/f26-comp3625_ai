@@ -1,12 +1,17 @@
 from translator import UniversalTranslator
 import numpy as np
+import matplotlib.pyplot as plt
 
 # create the UniversalTranslator object, with 2 knobs
 translator = UniversalTranslator(n_dim=2)
 
-#Simulated Annealing 
+# Simulated Annealing 
 # Random Array of Two values between 0 and 1
 rng = np.random.default_rng()
+
+# the logs for everything tried
+all_settings = []
+all_rates = []
 
 def func_wrapper(settings): 
   """ 
@@ -28,6 +33,10 @@ Purpose: Takes in an array of two values between 0 and 1 and passes it through t
       reward += 1   
 
   decode_rate = reward / len(segments) 
+
+  # log the attempt for the plot
+  all_settings.append(np.array(settings, copy=True))
+  all_rates.append(decode_rate)
 
   return decode_rate
 
@@ -79,3 +88,25 @@ for i in range(20):
 
 print(f"Best Rate: {best_rate * 100}")
 print(f"Best Settings: {best_settings}")
+
+print(f"Total settings tried: {translator.n_settings_tried()}")
+plt_settings = np.array(all_settings) 
+decode_rate = np.array(all_rates)   
+
+# generate a scatter plot
+plt.scatter(x=plt_settings[:, 0],
+            y=plt_settings[:, 1],
+            c=decode_rate,
+            vmin=0, vmax=1)
+
+# add colorbar and gridlines
+cbar = plt.colorbar(label="decode rate")
+plt.grid()
+
+# add labels
+plt.xlabel('knob 0 setting')
+plt.ylabel('knob 1 setting')
+plt.title('decode rates for settings tried')
+
+# display
+plt.show()
