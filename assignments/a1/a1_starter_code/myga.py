@@ -14,8 +14,8 @@ import numpy as np
 
 class Individual:
     def __init__(self, genes, fitness_score=0):
-        genes = genes
-        fitness_score = fitness_score
+        self.genes = genes
+        self.fitness_score = fitness_score
         
     def getFitnessScore(self):
         return self.fitness_score
@@ -34,35 +34,29 @@ class Individual:
 
 class MyGA:
     
-    def __init__(self,  num_genrations, num_parents, pop_size, fitness_func,
+    def __init__(self,  num_generations, num_parents, pop_size, fitness_func,
                 high_range, low_range, num_genes, mut_prob):
         
-        num_generation = num_generations
-        num_parents = num_parents
-        pop = [Individual()] * pop_size
-        fitness_func = fitness_func
-        # high_range = high_range
-        # low_range = low_range
-        num_genes = num_genes
-        mut_prob = mut_prob
+        self.num_generation = num_generations
+        self.num_parents = num_parents
+        self.pop_size = pop_size
+        self.fitness_func = fitness_func
+        self.num_genes = num_genes
+        self.mut_prob = mut_prob
         
-        pop = [self.pop[i].addGenes(np.uniform(low_range, high_range, size=num_genes)) for i in range(pop_size)]
+        
+        self.pop = []
+        for i in range(pop_size):
+            genes = np.random.uniform(low_range, high_range, size=num_genes)
+            self.pop.append(Individual(genes))
+        
+        self.best_genes = self.pop[0].getGenes()
+    
     
     def select(self, target, T):
         """
         https://numpy.org/devdocs/reference/random/generated/numpy.random.choice.html
-        
-        ##### Note to myself:
-        
-        I believe the logic is broken:
-        choice takes a ndarray, but pop is a list of Individual
-        
-        I need to create an array of their scores, and then
-        i can pass that, but if i pass that, choice will return 
-        those scores, not the selected parents, right?
-        
-        returns the scores of the parents and then fidn those parents
-        in pop.
+
         """
         
         # first calc their scores
@@ -73,107 +67,105 @@ class MyGA:
         
         # numpy uses vectorization, i.e. this operation 
         # is applied across the ndarray
-        expression = np.exp((f_scaled - f_max) / T)
+        expression = np.exp((f_max - f_scaled) / T)
         
         # creates and nd.array of prob
         # corresponding to each score
-        botlz_prob = expression / expression.sum()
+        boltz_prob = expression / expression.sum()
         
-        parent1, parent2 = np.random.choice(f_scaled, size=target, p=boltz_prob)
-        # rand_prob = np.random.uniform(0, 1, size=1)
-        # running_total = 0
-        # selected = []
-        # for i in range(len(pop)):
-        #     running_total += self.boltz_prob(pop[i], T, f_max)
-        #     if rand_prob < running_total:
-        #         selected.append(pop[i])
-        #         rand_prob = np.random.uniform(0, 1, size=1)
-        #         if len(selected) >= target:
-        #             break
-        return parent1, parent2
-    
-    # def boltz_prob(self, individual, T, f_max):
-        
-    #     f_scaled = individual.getFitnessScore() - f_max
-    #     sum_pop = (self.getAllFitnessScores() - f_max) / T
-    #     botlz_prob = np.exp((f_scaled) / T) / np.exp(sum_pop).sum()
-    #     return botlz_prob
-    
-    def xover(self, parent1, parent2):
-        
-        ##### Note: should i return 1 or both?
-        alpha = np.random.rand()
-        offspring1 = alpha * parent1 + (1 - alpha) * parent2
-        offspring2 = (1 - alpha) * parent1 + alpha * parent2
-        
-        if np.random.rand() > .50:
-            return offspring1
-        return offspring2
+        idxs = np.random.choice(np.arange(self.pop_size),replace=False, size=target, p=boltz_prob)
+        parents = [self.pop[i] for i in idxs]
 
-    def mutate(self, child):
+        return parents
+    
+    def xover(self, parents):
+        
+        parent1, parent2 = parents
+        ##### Note: should i return 1 or both?
+        ##### Note: I should try to generalize this? (maybe too much?)
+        alpha = np.random.rand()
+
+        p1_genes = parent1.getGenes()
+        p2_genes = parent2.getGenes()
+
+        offspring1 = Individual(genes=alpha * p1_genes + (1 - alpha) * p2_genes)
+        offspring2 = Individual(genes=(1 - alpha) * p1_genes + alpha * p2_genes)
+        
+        return (offspring1, offspring2)
+
+    def mutate(self, children):
         """
         https://stackoverflow.com/questions/3793786/how-to-get-random-slice-of-python-list-of-constant-size-smallest-code
         """
-        n = len(child)
-        # randomly choose the end
-        end = np.random.randint(1, n)
-        # define start with high = n - end
-        start = np.random.randint(0, n - end)
-        # choose the segment
-        segment = child[start:start + end]
-        # scramble segment
-        segment = np.random.shuffle(segment)
-        # reassign segment to child
-        
-        ##### Notes: is this allow?
-        child[start:start + end] = segment
-        return child
+        mutated_children = []
+        for child in children:
+            genes = np.random.uniform(0, 1, size=self.num_genes)
+            # genes = child.getGenes()
+            # n = len(genes)
+            # randomly choose the end
+            # end = np.random.randint(1, n)
+            # define start with high = n - end
+            # start = np.random.randint(0, n - end)
+            # choose the segment
+            # segment = genes[start:start + end]
+            # scramble segment
+            # segment = np.random.uniform(0, 1, size=len(segment))
+            # reassign segment to child
+            
+            ##### Notes: is this allowed?
+            # genes[start:start + end] = segment
+            
+            child.setGenes(genes)
+            
+            mutated_children.append(child)
+        return tuple(mutated_children)
     
     def getAllScores(self):
         fitness_scores = []
         for i in range(len(self.pop)):
-            fitness_score.append(self.pop[i].getFitnessScore())
+            fitness_scores.append(self.pop[i].getFitnessScore())
         return np.array(fitness_scores)
     
     def applyFitness(self):
         
         for indi in self.pop:
-            score = fitness_func(indi)
+            score = self.fitness_func(indi.getGenes())
             indi.setFitnessScore(score) 
+            
+    def findFittest(self):
+        find_fittest = lambda x:x.getFitnessScore()
+        return max(self.pop, key=find_fittest)
+    
+    def getFittest(self):
+        return self.best_genes
     
     def run(self, cooling=0.95, T=0.10):
-        new_gen = self.pop
-        
-        # first prev is the pop itself
-        prev_gens = self.pop
-        
+        new_gen = []
+                
         # as a starter
-        best_descendent = self.pop[0]
+        #best_descendent = self.pop[0]
     
-        for _ in range(self.num_generations):
+        for _ in range(self.pop_size):
             T *= cooling
-            new_gen.applyFitness()
+            self.applyFitness()
+            curr_pop = self.pop
             # Select candidates
-            parent1, parent2 = self.select(target=2, T=T)
+            parents = self.select(target=self.num_parents, T=T)
             # create offspring
-            child = self.xover(parent1, parent2)
+            children = self.xover(parents)
             # chance of mutation
-            if np.random.rand() < self.mutation_prob:
-                child = self.mutate(child)
-            
+            if np.random.rand() < self.mut_prob:
+                children = self.mutate(children)
             
             ##### Note: do i need to remove parents each gen?
-            self.population.append(child)
-            prev_gens.append(child)
+            # remove two individuals for the new gen and add children, mantain same size
+            # [b for a, b in zip(x, y) if a]
+            mask = np.isin(self.pop, parents, invert=True)
+            self.pop = [indi for masking, indi in zip(mask, self.pop) if masking]
             
-            # choose the best 
-            ##### note: is the child always best of the gen?
-            if child > best_descendent:
-                best_descendent = child
+            for child in children:
+                self.pop.append(child)
             
-            # if many generations havent improved, stop
-            ##### Note: This is a bug
-            if prev_gens.mean() == prev_gen[0]:
-                break
-        
-        return best_descendent.getGenes()
+            new_gen = self.pop        
+        self.best_genes = self.findFittest()
+        return new_gen
