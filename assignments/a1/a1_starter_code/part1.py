@@ -1,6 +1,7 @@
 from translator import UniversalTranslator
 import numpy as np
 import matplotlib.pyplot as plt
+import string
 
 # create the UniversalTranslator object, with 2 knobs
 translator = UniversalTranslator(n_dim=2)
@@ -29,8 +30,12 @@ Purpose: Takes in an array of two values between 0 and 1 and passes it through t
 
   reward = 0
   for code in segments: 
-    if code.isalpha(): 
-      reward += 1   
+    # Removes punctuation from segmented codes
+    code_segment = code.strip(string.punctuation)
+    
+    # Check if code is solely characters
+    if code_segment.isalpha(): 
+      reward += 1 
 
   decode_rate = reward / len(segments) 
 
@@ -79,8 +84,8 @@ def sim_annealing(f, settings, n=100, T=1000):
 
 best_rate = 0
 best_settings = None
-for i in range(20): 
-  settings, rate = sim_annealing(func_wrapper, settings=rng.random(size=2), n=500, T=1000)
+for i in range(1): 
+  settings, rate = sim_annealing(func_wrapper, settings=rng.random(size=2), n=1000, T=1000)
   print(f"Attempt {i + 1} Settings: {settings} Decode rate: {abs(rate) * 100}")
   if rate > best_rate: 
     best_rate = rate 
