@@ -131,6 +131,7 @@ def plot_results():
 
     # display
     plt.show()
-
-run_search(restarts=1, knobs=2)
-plot_results()
+    
+if __name__ == "__main__":
+  run_search(restarts=1, knobs=2)
+  plot_results()

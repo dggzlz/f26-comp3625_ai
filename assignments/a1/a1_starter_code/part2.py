@@ -1,6 +1,9 @@
 from translator import UniversalTranslator
 import numpy as np
-import string
+import string 
+
+# create the UniversalTranslator object, with 10 knobs
+translator = UniversalTranslator(n_dim=10)
 
 def fitness_function(settings):
     """
@@ -105,7 +108,7 @@ def ga(n_dim, pop_size=200, generations=30, crossover_rate=0.8, mutation_rate=0.
             best_rate = gen_best_rate
             best_settings = population[gen_best]
 
-        print(f"Generation {gen + 1}: Best fitness = {gen_best_rate * 100}, Overall best fitness = {best_rate * 100}")
+        print(f"Generation {gen + 1}: Best fitness = {gen_best_rate * 100:.2f}%, Overall best fitness = {best_rate * 100:.2f}%")
 
         next_population = []
         sorted_index = np.argsort(fitness_scores)  # sort indices of fitness scores from lowest to highest
@@ -143,28 +146,14 @@ def ga(n_dim, pop_size=200, generations=30, crossover_rate=0.8, mutation_rate=0.
 
     return (best_settings, best_rate)
 
+def run_search():
+    """Executes the Genetic Algorithm search and prints the best results."""
+    best_settings, best_rate = ga(n_dim=translator.n_dim, pop_size=200, generations=30)
 
+    print(f"\n--- Final Results ---")
+    print(f"Best Rate: {best_rate * 100:.2f}%")
+    print(f"Best Settings: {best_settings}")
+    print(f"Total settings tried: {translator.n_settings_tried()}")
 
-# create the UniversalTranslator object, with 10 knobs
-translator = UniversalTranslator(n_dim=10)
-# population = create_init_pop(20, n_dim=translator.n_dim)
-# fitness_scores = np.array([fitness_function(ind) for ind in population])
-# selected = selection(population, fitness_scores)
-
-# print("Fitness:", fitness_scores)
-# print("Mean fitness before:", fitness_scores.mean())
-# print("Mean fitness of selected:", np.array([fitness_function(s) for s in selected]).mean())
-
-best_settings, best_rate = ga(n_dim=translator.n_dim)
-print(f"Best Rate: {best_rate * 100}")
-print(f"Best Settings: {best_settings}")
-print(translator.translate(best_settings))
-
-
-# demo of how to use the UniversalTranslator object. You can delete these lines
-#random_settings = np.random.random(size=10)
-#translated_string = translator.translate(random_settings)
-#print(translated_string)
-
-# print total number of settings evaluated
-print(f'# settings tried: {translator.n_settings_tried()}')
+if __name__ == "__main__":
+  run_search()
