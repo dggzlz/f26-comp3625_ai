@@ -85,7 +85,7 @@ def mutation(individual, mutation_rate=0.1):
             mutated[i] += np.random.uniform(-0.1, 0.1)  # small adjustment so it doesn't overshoot the 0 - 1 bound
     return np.clip(mutated, 0.0, 1.0)  # ensures that the bounds for each setting stay within 0 - 1
 
-def ga(n_dim, pop_size=200, generations=50, crossover_rate=0.8, mutation_rate=0.1, tournament_size=3, elite_size=2):
+def ga(n_dim, pop_size=200, generations=30, crossover_rate=0.8, mutation_rate=0.1, tournament_size=3, elite_size=2):
     population = create_init_pop(pop_size, n_dim)
     best_rate = 0
     best_settings = population[0]
