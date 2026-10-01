@@ -5,9 +5,6 @@ import string
 
 # create the UniversalTranslator object, with 2 knobs
 translator = UniversalTranslator(n_dim=2)
-
-# Simulated Annealing 
-# Random Array of Two values between 0 and 1
 rng = np.random.default_rng()
 
 # the logs for everything tried
@@ -34,7 +31,7 @@ Returns: decode_rate - a float between 0 and 1, representing the percentage of w
     # Removes punctuation from segmented codes
     code_segment = code.strip(string.punctuation)
     
-    # Check if code is solely characters
+    # Check if code are solely letters
     if code_segment.isalpha(): 
       reward += 1 
 
@@ -93,41 +90,47 @@ def sim_annealing(f, settings, n=100, T=1000):
      
   return(best_settings, best_rate) 
 
-# settings, rate = sim_annealing(func_wrapper, settings=rng.random(size=2), n=100, T=1000)
-# print(translator.translate(settings))
-# print(settings)
-# print(abs(rate) * 100)
+def run_search(restarts=1, knobs=2):
+    """Executes the simulated annealing search and prints the best results."""
+    best_rate = 0
+    best_settings = None
+    
+    for i in range(restarts): 
+        start_settings = rng.random(size=knobs)
+        settings, rate = sim_annealing(func_wrapper, settings=start_settings, n=1000, T=1000)
+        print(f"Attempt {i + 1} Settings: {settings} Decode rate: {rate * 100:.2f}%")
+        
+        if rate > best_rate: 
+            best_rate = rate 
+            best_settings = settings 
 
-best_rate = 0
-best_settings = None
-for i in range(1): 
-  settings, rate = sim_annealing(func_wrapper, settings=rng.random(size=2), n=1000, T=1000)
-  print(f"Attempt {i + 1} Settings: {settings} Decode rate: {abs(rate) * 100}")
-  if rate > best_rate: 
-    best_rate = rate 
-    best_settings = settings 
+    print(f"\n--- Final Results ---")
+    print(f"Best Rate: {best_rate * 100:.2f}%")
+    print(f"Best Settings: {best_settings}")
+    print(f"Total settings tried: {translator.n_settings_tried()}")
 
-print(f"Best Rate: {best_rate * 100}")
-print(f"Best Settings: {best_settings}")
+def plot_results():
+    """Generates a 2D scatter plot of all settings tried and their decode rates."""
+    plt_settings = np.array(all_settings) 
+    decode_rate = np.array(all_rates)   
 
-print(f"Total settings tried: {translator.n_settings_tried()}")
-plt_settings = np.array(all_settings) 
-decode_rate = np.array(all_rates)   
+    # generate a scatter plot
+    plt.scatter(x=plt_settings[:, 0],
+                y=plt_settings[:, 1],
+                c=decode_rate,
+                vmin=0, vmax=1)
 
-# generate a scatter plot
-plt.scatter(x=plt_settings[:, 0],
-            y=plt_settings[:, 1],
-            c=decode_rate,
-            vmin=0, vmax=1)
+    # add colorbar and gridlines
+    cbar = plt.colorbar(label="decode rate")
+    plt.grid()
 
-# add colorbar and gridlines
-cbar = plt.colorbar(label="decode rate")
-plt.grid()
+    # add labels
+    plt.xlabel('knob 0 setting')
+    plt.ylabel('knob 1 setting')
+    plt.title('decode rates for settings tried')
 
-# add labels
-plt.xlabel('knob 0 setting')
-plt.ylabel('knob 1 setting')
-plt.title('decode rates for settings tried')
+    # display
+    plt.show()
 
-# display
-plt.show()
+run_search(restarts=1, knobs=2)
+plot_results()
