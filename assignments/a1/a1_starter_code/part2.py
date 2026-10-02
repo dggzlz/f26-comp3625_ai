@@ -1,3 +1,19 @@
+"""
+===============================================================================
+Course:         COMP 3625: Artificial Intelligence
+Assignment:     Assignment 1
+File:           part2.py
+
+Author(s):      Edwin Pang
+                John Galang
+                Tarun Jaswal
+                Diego Gonzalez R.
+                
+Date:           2026-10-01
+
+Dependencies:   numpy, matplotlib, UniversalTranslator, string
+===============================================================================
+"""
 from translator import UniversalTranslator
 import numpy as np
 import string 
@@ -96,52 +112,67 @@ def ga(n_dim, pop_size=200, generations=30, crossover_rate=0.8, mutation_rate=0.
     for gen in range(generations):
         # eval each individual once per generation and store fitness score in numpy array
         fitness_scores = []
+        
+        # evaluate each individual's performance
         for individual in population:
             score = fitness_function(individual)
             fitness_scores.append(score)
-        fitness_scores = np.array(fitness_scores)
+        
+        fitness_scores = np.array(fitness_scores) # convert to ndarray
 
+        # find the generation's fittest
         gen_best = np.argmax(fitness_scores)
         gen_best_rate = fitness_scores[gen_best]
 
+        # check if this generaton did better
         if gen_best_rate > best_rate:
             best_rate = gen_best_rate
-            best_settings = population[gen_best]
+            best_settings = population[gen_best] # new best overall
 
         print(f"Generation {gen + 1}: Best fitness = {gen_best_rate * 100:.2f}%, Overall best fitness = {best_rate * 100:.2f}%")
 
         next_population = []
         sorted_index = np.argsort(fitness_scores)  # sort indices of fitness scores from lowest to highest
+        
+        # elistism
         for i in range(elite_size):
             elite = sorted_index[pop_size - 1 - i]  # get from end of list, where highest fitness is
             next_population.append(population[elite])  # add elite to next generation
 
+        # select parents
         parents = selection(population, fitness_scores, tournament_size)
 
-        j = 0
-        while len(next_population) < pop_size:
+        j = 0 # counter
+        len_next_pop = len(next_population)
+        while len_next_pop < pop_size:
+            
+            # safe check; prevent out-of-bound error
             if j + 1 >= pop_size:
                 j = 0
 
             parent1 = parents[j]
             parent2 = parents[j + 1]
-            j = j + 2
+            j += 2 # also as j += 2
 
+            # probablity of crossover
             if np.random.random() < crossover_rate:
-                children = crossover(parent1, parent2)
-                child1 = children[0]
-                child2 = children[1]
+                child1, child2 = crossover(parent1, parent2)
             else:
                 child1 = np.copy(parent1)
                 child2 = np.copy(parent2)
 
             child1 = mutation(child1, mutation_rate)
             next_population.append(child1)
-
-            if len(next_population) < pop_size:
+            
+            # safe check; to prevent overpopulation
+            if len_next_pop < pop_size:
                 child2 = mutation(child2, mutation_rate)
                 next_population.append(child2)
+            
+            # update next pop's length
+            len_next_pop = len(next_population)
 
+        # set population to next generation
         population = np.array(next_population)
 
     return (best_settings, best_rate)
