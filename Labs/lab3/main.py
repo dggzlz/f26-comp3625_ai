@@ -16,7 +16,12 @@ dists = problem.sum_city_distances([x1, y1, x2, y2, x3, y3])
 
 # TASK 1: solve for best airport locations using the gradient-descent (CG) approach
 # YOUR CODE HERE
+def func_wrap(parameters):
+    return problem.sum_city_distances(parameters) 
 
+result = minimize(func_wrap, x0=np.random.rand(6), method="CG")
+print(f"Best airport locations: {result.x}")
+print(f"Sum of distances: {result.fun}")
 
 
 # TASK 2: solve for best airport locations using a genetic algorithm approach
