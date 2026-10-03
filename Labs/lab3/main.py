@@ -94,13 +94,36 @@ print(f"Sum of distances: {-solution_fitness}")  # flip the sign back to get the
 # TASK 3
 # plot the cities and the solutions found
 # YOUR CODE HERE
+cities = problem.city_locations
 
+def plot_solution(ax, title, airport_coords, distance):
+    airports = np.array(airport_coords).reshape(-1, 2)
+    ax.set_title(f"{title}\nSum of distances: {distance:.4f}")
+    ax.scatter(cities[:, 0], cities[:, 1], label="cities")
+    ax.scatter(airports[:, 0], airports[:, 1], c="red", marker="*", s=100, label="airports")
+    ax.legend(loc="upper left")
+
+# Creates 1 row and 2 columns of plots so both plots can be seen in the same window
+fig, (left, right) = plt.subplots(1, 2)
+
+plot_solution(left, "CG", result.x, result.fun)
+plot_solution(right, "GA", solution, -solution_fitness)
+
+plt.show()
 
 
 # TASK 4:
 # What insights did you gain into genetic algorithms during this lab?
 
-
+# We learned that GAs require a lot of parameters to account for, such as balancing mutation 
+# rates and population sizes. It requires many configurations for exploring and exploiting its 
+# environment compared to gradient methods. 
 
 # GAs are considered to be particularly powerful (if slow) search algorithms.
 # Did you find they significantly outperformed the CG method in this problem? Why do you think that is?
+
+# Although GAs are much more powerful than gradient methods, in this lab, the CG method performs more 
+# efficiently due to its speed. GA's are computationally slow, which is a major factor for optimizing 
+# search algorithms. So, for small maps and continuous mathematical optimization, gradient descent methods 
+# outperform the GA. However, for bigger maps, GA would perform better, as it can explore multiple areas 
+# simultaneously and escape the local optima that would trap a single gradient path.
