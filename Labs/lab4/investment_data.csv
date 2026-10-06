@@ -1,0 +1,7 @@
+owner,p_payout,payout
+clientA,0.6,80000
+clientA,0.5,20000
+clientB,0.9,100000
+clientB,0.4,40000
+clientC,0.1,10000
+clientC,0.05,90000
