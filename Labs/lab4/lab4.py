@@ -5,30 +5,43 @@
 # Task 1
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
-def utility(prob, money, denom):
-    return prob * np.log(money/denom + 1)
+def utility(multiplier, money, denom):
+    return multiplier * np.log(money/denom + 1)
 
-x = np.arange(0, 100000)  # Sample data.
+money_range = np.arange(0, 100001)  # Sample data.
 
-client_a = utility(0.2, x, 1000)
-client_b = utility(0.14, x, 200)
-client_c = utility(1.43, x, 100000)
+# multiplier
+client_a_mult = 0.2
+client_b_mult = 0.14
+client_c_mult = 1.43
 
+# denominators
+client_a_denom = 1000
+client_b_denom = 200
+client_c_denom = 100000
+
+# calculate their utility function
+client_a = utility(client_a_mult, money_range, client_a_denom)
+client_b = utility(client_b_mult, money_range, client_b_denom)
+client_c = utility(client_c_mult, money_range, client_c_denom)
+
+# plot results
 fig, ax = plt.subplots(figsize=(10, 5.4), layout='constrained')
-ax.plot(x, client_a, label='client a')  
-ax.plot(x, client_b, label='client b')  
-ax.plot(x, client_c, label='client c')  
-ax.set_xlabel('x label')  
-ax.set_ylabel('y label')  
-ax.set_title("Simple Plot")  
+ax.plot(money_range, client_a, label='client a')  
+ax.plot(money_range, client_b, label='client b')  
+ax.plot(money_range, client_c, label='client c')  
+ax.set_xlabel('Money')  
+ax.set_ylabel('Utility')  
+ax.set_title("Utility functions for Clients")  
 ax.legend()  
 
 plt.grid()
-plt.show()
+# plt.show()
 
 # From the plot we can observe that Client C is closer to a linear utiliy model whereas Client A and B are genuine logarithimic models. 
-# This means that Client A and B are risk-averse, meaning that they prefer actions that gurantee wealth shown by the rapid increase 
+# This means that Client A and B are risk-averse, meaning that they prefer actions that guarantee wealth shown by the rapid increase 
 # in utility near the start of the graph. However, at higher wealth levels, they will avoid gambling to get more money 
 # because they want to minimize the risk of losing their current wealth, depicted by the flattening slope near the end of the graph. 
 
@@ -37,6 +50,45 @@ plt.show()
 # monetary payouts and ignoring possible risk.
 
 # Task 2 - 
+
+
+# To get expected utility:
+
+# if an investement pays m amount of dollars with probability p,
+# or zero with probability (1 - p)
+# then we can say the expected utility equals:
+# EU(m) = U(m) * p + U(0) * (1 - p) = U(m) * p
+# EU(m) = p * a * ln(m/d + 1)
+
+def expected_utility(multiplier, money, prob, denom):
+    return prob * multiplier * np.log(money/denom + 1)
+
+df = pd.read_csv('investment_data.csv')
+
+# get the neccessary data to operate 
+payout = df['payout']
+probs = df['p_payout']
+multipliers = np.array([client_a_mult, client_a_mult, client_b_mult, client_b_mult, client_c_mult, client_c_mult])
+denoms = np.array([client_a_denom, client_a_denom, client_b_denom, client_b_denom, client_c_denom, client_c_denom])
+
+df['expected_utility'] = expected_utility(multipliers, payout, probs, denoms)
+
+print(df)
+
+# take U($) and do some algebraic operations.
+# from U($) = mult * ln(money/denom + 1)
+# U($) -> u (utility)
+# money -> amount (A(u))
+# denom -> d
+# by doing some operations we get -> amount = d * (e^(u/mult) - 1)
+# final function -> A(u) = d * (e^(u/mult) - 1)
+
+def inversed_utility(denom, utility, mult):
+    return denom * (np.exp(utility / mult) - 1)
+
+eu = df['expected_utility']
+df['U(payout)'] = inversed_utility(denoms, eu, multipliers)
+print(df)
 
 # Inverse payout Client A = 1000    * (EXP(EU / 0.2) - 1)
 # Inverse payout Client B = 200     * (EXP(EU / 0.14) - 1)
@@ -49,6 +101,8 @@ plt.show()
 # clientB	0.4	    40000		0.7424626871	0.2969850749		3414.635955	    1468.431646	    23082.15466	
 # clientC	0.1	    10000		0.1362935571	0.01362935571		70.52242669	    20.44977857	    957.6582777	
 # clientC	0.05	90000		0.9178510572	0.04589255286		257.9240267	    77.58336863	    3261.321824	
+
+
 
 # Task 3 - 
 
