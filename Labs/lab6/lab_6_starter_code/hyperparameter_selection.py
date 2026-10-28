@@ -40,8 +40,7 @@ for criterion in ['gini', 'entropy', 'log_loss']:
             clf = DecisionTreeClassifier(criterion=criterion, max_depth=max_depth, ccp_alpha=ccp_alpha)
             clf.fit(x_train, y_train)
             preds = clf.predict(x_test)
-            n_correct = (preds == y_test).mean()
-            accuracy = n_correct.max() 
+            accuracy = (preds == y_test).mean()
 
             if accuracy > best_acc:
                 best_acc = accuracy
@@ -49,6 +48,10 @@ for criterion in ['gini', 'entropy', 'log_loss']:
                 best_max_d = max_depth
                 best_ccp = ccp_alpha
 
-            print(f"Training Accuracy: {n_correct:.2f}")
-
+                print(f"Training Accuracy: {accuracy:.2f}")
+                print(f"Criterion: {best_crit}")
+                print(f"Max depth: {best_max_d}")
+                print(f"ccp alpha: {best_ccp}")
+                print()
+                
 print(f"\nBest params: {best_crit}, {best_max_d}, {best_ccp}")
