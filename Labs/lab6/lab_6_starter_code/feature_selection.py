@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -22,7 +23,7 @@ np.random.seed(42)
 df = pd.read_csv('wine.csv', index_col=None)
 
 # randomly assign instances to training and test sets (50% each for illustration purposes - 66.6% training maybe more typical)
-train_idx = np.random.random(size=df.shape[0]) < 0.5
+train_idx = np.random.random(size=df.shape[0]) < 0.555
 
 # separate into features (X) and classes (Y), for training and test sets
 x_train = df.drop('class', axis=1).loc[train_idx]
@@ -31,6 +32,10 @@ x_test = df.drop('class', axis=1).loc[~train_idx]
 y_test = df['class'].loc[~train_idx]
 
 # instantiate the LogisticRegression object to use in the search
+model = LogisticRegression()
+model = KNeighborsClassifier(n_neighbors=5)
+model.fit(x_train, y_train)
+all_features_accuracy = (model.predict(x_test) == y_test).mean()
 
 # The dataset includes 13 features. Some may be redundant, or irrelevant to the prediction of wine category.
 # Let's find the best subset of features to use for supervised learning
@@ -40,7 +45,6 @@ y_test = df['class'].loc[~train_idx]
 # Note that you can get the complete list of feature names like this: x_train.columns, or as a set: set(x_train.columns)
 # and you can reduce the dataframe to a subset of features like this: x_train_subset = x_train[desired_features_list]
 
-model = LogisticRegression()
 best_score = 0
 features_set = set(x_train.columns)
 optimal_subset = set()
@@ -50,7 +54,8 @@ for feature in features_set:
     x_train_subset = x_train[list(optimal_subset)] # take the subset from x_train
     x_test_subset = x_test[list(optimal_subset)]   # make sure to match the test set to the same number of features
     model.fit(x_train_subset, y_train)             # train model
-    curr_score = (model.predict(x_test_subset) == y_test).mean() # calculate score
+    preds = model.predict(x_test_subset)           # test model
+    curr_score = (preds == y_test).mean()          # calculate accuracy
     
     # check whether the model improved or not
     if best_score < curr_score:
@@ -58,14 +63,6 @@ for feature in features_set:
     elif curr_score <= best_score:
         break
     
-print(f"\nBest features: {optimal_subset}")
-    
-
-# The dataset includes 13 features. Some may be redundant, or irrelevant to the prediction of wine category.
-# Let's find the best subset of features to use for supervised learning
-# write a search that incrementally builds the optimal feature subset (the subset that gets best accuracy on test set)
-# The search can go forward (adding features one by one) or backward (removing features one by one)
-# stop the search when another addition/removal would not improve accuracy.
-# Note that you can get the complete list of feature names like this: x_train.columns, or as a set: set(x_train.columns)
-# and you can reduce the dataframe to a subset of features like this: x_train_subset = x_train[desired_features_list]
-
+print(f"\nOptimal features:           {', '.join([feature for feature in optimal_subset])}")
+print(f"Optimal features' Accuracy: {best_score:.2f}")
+print(f"All features' Accuracy:     {all_features_accuracy:.2f}")
