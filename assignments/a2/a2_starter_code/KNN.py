@@ -17,29 +17,33 @@ class KNN:
         self.dataset = 0
 
     def fit(self, X, y):
+        X = X.to_numpy()
+        self.dataset = X
         self.x_max = np.max(X, axis=0)
         self.x_min = np.min(X, axis=0)
         self.scale_factor = self.x_max - self.x_min
-        self.dataset = X
-        self.norm_data = self.normalization(X)
         self.class_feature = y.to_numpy()
     
     def euclidean_dist(self, data):
         a = data
         b = self.dataset
         scaler = self.scale_factor
-        return np.sqrt(np.sum(((a - b) * scaler)**2, axis=2))
+        return np.sum(((a - b) * scaler)**2, axis=2)
 
     def manhattan_dist(self, norm2):
         return np.sum(np.abs(norm2 - self.norm_data), axis=1)
     
     def predict_proba(self, data):
-            
-        # norm_data = (self.normalization(data)).to_numpy()
         data = data.to_numpy()[:, np.newaxis, :]
-        calc = self.calc_dist(data)
-        idx = np.argsort(calc, axis=1)[:,:self.neighbours]
-        return self.class_feature[idx].mean(axis=1)
+        jump = 150
+        final_dist = []
+        
+        for row in range(0, data.shape[0], jump):
+            batch = data[row: row + jump]
+            calc = self.calc_dist(batch)
+            idx = np.argpartition(calc, self.neighbours, axis=1)[:,:self.neighbours]
+            final_dist.append(self.class_feature[idx].mean(axis=1))
+        return np.concatenate(final_dist, axis=0)
         # proba = []
         # for row in range(norm_data.shape[0]):
         #     calc = self.calc_dist(norm_data[row])

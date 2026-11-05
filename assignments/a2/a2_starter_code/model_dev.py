@@ -2,32 +2,15 @@ import pandas as pd
 import numpy as np
 import sklearn 
 from utility import set_premiums, expected_utility_uninsured, max_acceptable_premium
-from KNN import KNN
+from search import SimAnnealing
+from LogisticRegression import LogisticRegression
 import time
 
 
-# start = time.time()
-# p_claims = model.predict_proba(x_test)
-# end = time.time()
-# print("Running total", end-start)
-# coverage = x_test['coverage_amount'].to_numpy()
-# premium, viable = set_premiums(p_claims, coverage)
-
-# v_coverage = coverage[viable]
-# v_premium = premium[viable]
-# v_p_claims = p_claims[viable]
-
-# profit_margin = (v_premium - (v_p_claims * v_coverage)) / v_coverage
-# idx = np.argsort(profit_margin)[::-1]
-
-
-def evualate_scales(model: KNN, set_tests: tuple, candidates_scales):
-    x_test, y_test = set_tests
-    model.scale_factor = candidates_scales
-    start = time.time()
+def evualate_profit(model, test_sets: tuple, limit=100000000):
+    x_test, y_test = test_sets
+    
     p_claims = model.predict_proba(x_test)
-    end = time.time()
-    print("Running total", end-start)
     coverage = x_test['coverage_amount'].to_numpy()
     premium, viable = set_premiums(p_claims, coverage)
 
@@ -37,10 +20,18 @@ def evualate_scales(model: KNN, set_tests: tuple, candidates_scales):
 
     profit_margin = (v_premium - (v_p_claims * v_coverage)) / v_coverage
     idx = np.argsort(profit_margin)[::-1]
-    profitable_customers = np.cumsum(v_coverage[idx]) <= 100000000
+    profitable_customers = np.cumsum(v_coverage[idx]) <= limit
     money_in = v_premium[idx][profitable_customers].sum()
     money_out = ((((y_test.to_numpy())[viable])[idx])[profitable_customers] * v_coverage[idx][profitable_customers]).sum()
-    return money_in - money_out
+    return money_in - money_out    
+
+def train_and_eval(params, train_set, test_set):
+    epochs, step = params
+    x_train, y_train = train_set
+
+    model = LogisticRegression(int(epochs), step)
+    model.fit(x_train, y_train)
+    return evualate_profit(model, test_set)
 
 if __name__ == "__main__":
     # Part I -- pre-loading and set up
@@ -59,13 +50,34 @@ if __name__ == "__main__":
     # separate into features (X) and classes (y), for training and test sets
     x_train = customer_data_df.loc[train_idx]
     y_train = customer_claims_df.loc[train_idx]
-    x_test = customer_data_df.loc[~train_idx]
-    y_test = customer_claims_df.loc[~train_idx]
+    test_set = (customer_data_df.loc[~train_idx], customer_claims_df.loc[~train_idx])
 
     # write your code to develop your agent program here.
     # you can, of course, add additional .py files as needed.
+    
 
-    model = KNN()
-    model.fit(x_train, y_train)    
+    print("Starting timer")
+    start = time.time()
+    
+    model = LogisticRegression()
+    model.fit(x_train, y_train)   
 
-    total_profit = evualate_scales
+    total_profit = evualate_profit(model, test_set)
+    wrapper = lambda params: train_and_eval(params, (x_train, y_train), test_set)
+    search = SimAnnealing(fitness=wrapper)
+    baseline = np.array([model.epochs, model.step])
+    search.run(baseline=baseline)
+    print("best candidates", search.best_candidates)
+    print("best profit", search.best_profit)
+    
+    # build model with optimal hyperparameters
+    epochs, step = search.best_candidates
+    model = LogisticRegression(epochs=int(epochs), step=round(step, 2))
+    model.fit(x_train, y_train)
+    final_profit = evualate_profit(model, test_set)
+    print("Final profit", final_profit)
+    end = time.time()
+    print("Running total", end-start)
+    
+    
+    
