@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 class SimAnnealing:
-    def __init__(self, fitness, T=1000, cooling_rate=0.95, step_size=(50, 0.05), n=50):
+    def __init__(self, fitness, T=1000, cooling_rate=0.95, step_size=(50, 0.05), n=100):
         self.func = fitness
         self.T = T
         self.cooling_rate = cooling_rate
@@ -12,17 +12,15 @@ class SimAnnealing:
         self.curr_candidates = 0
         self.curr_profit = 0
         self.iterations = n
-        
-        
     
-    def sim_annealing(self, size=2):
+    def sim_annealing(self):
         f_curr = self.curr_profit
 
         for _ in range(self.iterations): 
         
             #Indpendently roll a random number to add or subtract for each knob
             candidate_1 = np.random.normal(loc=0.0, scale=self.step_size[0])
-            candidate_2 = np.random.normal(loc=0.0, scale=self.step_size[1]) # small adjustments so that they don't overshoot the 0 - 1 bound
+            candidate_2 = np.random.normal(loc=0.0, scale=self.step_size[1])
             candidates = np.array([candidate_1, candidate_2])
             successor = self.curr_candidates + candidates
             mins = np.array([1, 0.001])

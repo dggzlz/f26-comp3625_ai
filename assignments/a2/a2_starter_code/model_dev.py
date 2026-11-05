@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import sklearn 
+import pickle
 from utility import set_premiums, expected_utility_uninsured, max_acceptable_premium
 from search import SimAnnealing
 from LogisticRegression import LogisticRegression
@@ -32,6 +32,10 @@ def train_and_eval(params, train_set, test_set):
     model = LogisticRegression(int(epochs), step)
     model.fit(x_train, y_train)
     return evualate_profit(model, test_set)
+
+def save_model(model):
+    with open("final_model.pkl", "wb") as f:
+        pickle.dump(model, f)
 
 if __name__ == "__main__":
     # Part I -- pre-loading and set up
@@ -67,15 +71,17 @@ if __name__ == "__main__":
     search = SimAnnealing(fitness=wrapper)
     baseline = np.array([model.epochs, model.step])
     search.run(baseline=baseline)
-    print("best candidates", search.best_candidates)
-    print("best profit", search.best_profit)
+    print(f"best candidates: {int(search.best_candidates[0])}, {search.best_candidates[1]:.2f}")
+    print(f"best profit: {search.best_profit:,.2f}")
     
     # build model with optimal hyperparameters
     epochs, step = search.best_candidates
     model = LogisticRegression(epochs=int(epochs), step=round(step, 2))
     model.fit(x_train, y_train)
+    
+    save_model(model)
     final_profit = evualate_profit(model, test_set)
-    print("Final profit", final_profit)
+    print(f"Final profit: {final_profit:,.2f}")
     end = time.time()
     print("Running total", end-start)
     

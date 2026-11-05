@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import pickle
 
 
 
@@ -7,6 +8,12 @@ import numpy as np
 # The dataframe I pass in will have the same columns as customer_data.csv, but will not include any of the customers in customer_data.csv
 # You will not be given any of the historical customer data or claims data at grading time, 
 # so you will need to save any models you train in model_dev.py and load them here.
+def load_model():
+    model = 0
+    with open("final_model.pkl", "rb") as f:
+        model = pickle.load(f)
+    return model
+
 
 def set_premium(customer_data: pd.DataFrame) -> pd.DataFrame:
     """
@@ -18,3 +25,7 @@ def set_premium(customer_data: pd.DataFrame) -> pd.DataFrame:
             desired_customer:  a boolean column indicating which customers you want to take on
             premium:    the amount of the premium to charge each customer
     """
+    model = load_model()
+    customer_data_df = pd.read_csv(customer_data, index_col=None)
+    
+    
