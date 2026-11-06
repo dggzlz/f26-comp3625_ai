@@ -44,19 +44,9 @@ class KNN:
             idx = np.argpartition(calc, self.neighbours, axis=1)[:,:self.neighbours]
             final_dist.append(self.class_feature[idx].mean(axis=1))
         return np.concatenate(final_dist, axis=0)
-        # proba = []
-        # for row in range(norm_data.shape[0]):
-        #     calc = self.calc_dist(norm_data[row])
-        #     idx = np.argsort(calc)[:self.neighbours]
-        #     closest_neighbours = self.class_feature[idx]
-        #     proba.append(closest_neighbours.mean())
-        # return proba
-    
+
     def predict(self, test_set):
         self.predict_proba(test_set)
-    # DO NOT ERASE
-    # def normalization(self, data):
-    #     return (data - self.x_min) / self.scale_factor
 
     def normalization(self, data):
         return (data - self.x_min) / (self.x_max - self.x_min)

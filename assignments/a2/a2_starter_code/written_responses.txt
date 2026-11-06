@@ -1,22 +1,37 @@
 Question 0:
 Report the line number(s) where your program performs utility calculations
 
-
+From utility.py file, line 18
 
 
 Question 1:
 The supervised learning model you used: report its accuracy, sensitivity, and specificity in predicting claims.
 Refer to specific line numbers where these things are measured.
 
+Accuracy = 67.54%
+Sensitivity = 6.78%
+Specificity = 97.65%
 
-
-
+Refer to `get_metrics` function from lines 103-127 in model_dev.py
 
 Question 2:
 How confident are you that your model has not overfit the historical data? Why?
 
+If you look at the sensitivity, you can notice the model is scoring less than 7%. 
+In the context of the problem, the model is only capturing ~7% of clients who actually 
+made a claim. The model is basically playing it safe, by assigning zeros to the customers.
+Moreover, after doing some data exploration, we noticed that the claim class has a ratio of ~33% 1s, and ~66% 0s.
+This explains why the sensitivity is low. The model learned that it is safest to assume that a client won't make a claim.
 
+Based on this, we strongly believe the model is underfitting. The model doesn't have enough context of 
+the problem, and for that reason is playing safe. Some ways to improve the model would be to change the 
+math (e.g. changing threshold [line 115: model_dev.py] for getting metrics), splitting the dataset differently (different percentages, 
+or use stratofy), or simply feeding it a larger dataset.
 
 
 Question 3:
 In this assignment scenario, which party is acting according to the principle of maximum expected utililty? The customer? Your program? Both?
+In this case, the customer is acting in accordance to the principle of maximum expected utility.
+The customer is evaluating and comparing whether is worth going uninsured vs going insured. [line 74: utility.py].
+On the other hand, the program only cares for profitabality. the program is comparing the benefits of insuring a set of
+customers vs how much it would cost them to insure said set of customers. 

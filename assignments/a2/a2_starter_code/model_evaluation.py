@@ -27,5 +27,6 @@ def set_premium(customer_data: pd.DataFrame) -> pd.DataFrame:
     """
     model = load_model()
     customer_data_df = pd.read_csv(customer_data, index_col=None)
+#     p_premiums = model.
     
     
