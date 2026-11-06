@@ -55,7 +55,7 @@ def eval_profit(model, test_sets: tuple, limit=100000000):
     premium, viable = set_premiums(p_claims, coverage)
     
     # calculates Model's metrics
-    metrics = get_metrics(p_claims, y_test)
+    get_metrics(p_claims, y_test)
 
     # Filter arrays to only include policies that are economically viable for both parties 
     # (v as viable)
