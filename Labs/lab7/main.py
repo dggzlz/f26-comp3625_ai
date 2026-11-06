@@ -41,7 +41,6 @@ y = 0.99
 run = 10000
 for _ in range(run):
     for state in mdp.all_states():
-        best_move = float('-inf') 
         for action in mdp.get_actions(state=state):
             # get the bellman equation ready
             probs_dict = mdp.get_transition_probabilities(state=state, action=action)
@@ -62,11 +61,26 @@ print(f'Q values for (3, 2): {Q[(3, 2)]}')
 print(f'Q values for (3, 3): {Q[(3, 3)]}')
 print(f'Q values for (1, 1): {Q[(1, 1)]}')
 
+# yes, they make sense (actions: 0=N, 1=E, 2=S, 3=W):
+# (4, 1): West is best, moving away from -1. North is worst because it heads into -1.
+# (3, 2): North is best, moving towards +1. East is worst because it heads into -1.
+# (1, 1): North is best, starting the route around the wall to +1.
+
 
 
 # TASK 2:
 # now change the movement cost (line 6) to -2 (high punishment for every movement). how does this change the best action for (3, 2), and why?
 
+# The best action changes from North to East, straight into the -1 state.
+# Each move costs -2, so taking the -1 and ending the game right away is cheaper than walking to +1.
+
 # now change the movement cost to -0.01 (low punishment for every movement). how does this change the best action for (3, 2), and why?
 
+# The best action changes from North to West, into the wall at (2, 2).
+# North has a 10% chance of slipping into -1, but West has none. Moves are so cheap that wasting a few is worth it to stay safe.
+
 # now try +1 (a large reward for every movement). How does this change the best action for state (3, 3), and why?
+
+# The best action changes from East to West, away from the +1 state.
+# Every move now earns a reward and reaching +1 ends the game, so the agent wants to keep moving forever.
+# West is the only action with no chance of entering the +1 state.
