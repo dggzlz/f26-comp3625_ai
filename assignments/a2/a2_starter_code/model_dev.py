@@ -21,7 +21,7 @@ import numpy as np
 import pickle
 from sklearn.model_selection import train_test_split
 from utility import set_premiums, expected_utility_uninsured, max_acceptable_premium
-from Search import SimAnnealing
+from search import SimAnnealing
 from LogisticRegression import LogisticRegression
 import time
 
