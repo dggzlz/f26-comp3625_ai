@@ -3,7 +3,6 @@ Report the line number(s) where your program performs utility calculations
 
 From utility.py file, line 18
 
-
 Question 1:
 The supervised learning model you used: report its accuracy, sensitivity, and specificity in predicting claims.
 Refer to specific line numbers where these things are measured.

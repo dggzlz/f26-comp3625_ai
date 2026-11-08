@@ -72,7 +72,12 @@ class SimAnnealing:
                 
             # Cool down the temperature to shift the algorithm from exploring to exploiting
             self.T *= self.cooling_rate 
-            
+    
+    def get_hyperparams(self):
+        """Getter method to return final hyperparameters"""
+        epochs, alpha = self.best_candidates
+        return int(epochs), float(round(alpha, 2))
+    
     def run(self, baseline):
         """
         Initializes the search with a baseline set of hyperparameters and 

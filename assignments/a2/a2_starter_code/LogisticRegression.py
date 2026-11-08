@@ -9,7 +9,7 @@ class LogisticRegression:
     It performs binary classification by utilizing Gradient Descent to optimize weights 
     and the Sigmoid function to output probabilities.
     """
-    def __init__(self, epochs=1000, alpha=0.5):
+    def __init__(self, hyperparameters=(1000, 0.5)):
         """
         Initializes the Logistic Regression model with hyperparameters
 
@@ -19,8 +19,7 @@ class LogisticRegression:
         """
         self.bias = 0
         self.w = None
-        self.epochs = epochs
-        self.alpha = alpha
+        self.epochs, self.alpha = hyperparameters
         self.x_max = 0
         self.x_min = 0
 

@@ -22,7 +22,6 @@ import pickle
 from utility import set_premiums, expected_utility_uninsured, max_acceptable_premium
 from Search import SimAnnealing
 from LogisticRegression import LogisticRegression
-import time
 
 # standard way of keeping randomness the same at every run
 np.random.seed(42)
@@ -30,11 +29,11 @@ np.random.seed(42)
 ACCURACY = 0              # Metric
 SENSITIVITY = 0           # Metric
 SPECIFICITY = 0           # Metric
-THRESHOLD = 0.45          # Std. Logistic Regression threshold
+THRESHOLD = 0.45          # Logistic Regression threshold
 SPLIT = 0.666             # Data 67/33 split
-PROFIT_TARGET = 100000000 # Desired profit
+COVER_LIMIT = 100_000_000 # Max. budget for coverage
 
-def eval_profit(model, test_sets: tuple, limit=PROFIT_TARGET):
+def eval_profit(model, test_sets: tuple, limit=COVER_LIMIT):
     """
     Evaluates the financial performance of a trained model on testing data 
     by calculating total profit, capped by a maximum cumulative coverage limit.
@@ -96,7 +95,7 @@ def train_and_eval(params, train_set, test_set):
     x_train, y_train = train_set
 
     # Instantiate and train the model using the candidate hyperparameters
-    model = LogisticRegression(int(epochs), alpha)
+    model = LogisticRegression((int(epochs), alpha))
     model.fit(x_train, y_train)
     return eval_profit(model, test_set)
 
@@ -116,7 +115,7 @@ def get_metrics(probs, actual):
     
     # Calculate confusion matrix components using vectorized bitwise operations
     TP = prediction & actual     # True Positive: Predicted 1, Actual 1
-    TN = ~(prediction | actual)  # True Negative: Predicted 0, Actual 0 (Optimized via De Morgan's Laws)
+    TN = ~(prediction | actual)  # True Negative: Predicted 0, Actual 0
     FP = prediction & ~actual    # False Positive: Predicted 1, Actual 0
     FN = ~prediction & actual    # False Negative: Predicted 0, Actual 1
 
@@ -136,6 +135,19 @@ def save_model(model):
     with open("./model/final_model.pkl", "wb") as f:
         pickle.dump(model, f)
 
+def print_stats(model_title, hyperparams, profit):
+    """Helper function to print models stats"""
+    
+    print(f"\n{model_title}'s performance")
+    print("=" * 50)
+    print(f"Accuracy = {ACCURACY:.2%}")
+    print(f"Sensitivity = {SENSITIVITY:.2%}")
+    print(f"Specificity = {SPECIFICITY:.2%}")
+    print("-"* 50)
+    print("Hyperparameters:", hyperparams)
+    print(f"Profit: {profit:,.2f}")
+    print("=" * 50)
+    
 if __name__ == "__main__":
     # -- PRE-LOADING & SET UP --
     # load historical customer data
@@ -150,40 +162,42 @@ if __name__ == "__main__":
     y_train = customer_claims_df.loc[train_idx]
     x_test = customer_data_df.loc[~train_idx]
     y_test = customer_claims_df.loc[~train_idx]
+    test_set = (x_test, y_test)
 
     # -- TRAINING & TESTING --
     # Establish a baseline model using default hyperparameters
-    model = LogisticRegression()
+    print("Training base model...")
+    hyperparameters = (1000, 0.5)
+    model = LogisticRegression(hyperparameters)
     model.fit(x_train, y_train) 
+    initial_profit = eval_profit(model, test_set)
     
-    test_set = (x_test, y_test)
+    # print initial stats
+    print_stats("Base model", hyperparameters, initial_profit)
+        
     # Wrap the training function so Simulated Annealing can pass in random parameters
     wrapper = lambda params: train_and_eval(params, (x_train, y_train), test_set)
     
     # Initialize and execute the Simulated Annealing hyperparameter search
+    print("\nInitializing hyperparameter optimization...")
     search = SimAnnealing(fitness=wrapper)
     baseline = np.array([model.epochs, model.alpha])
     search.run(baseline=baseline)
+    hyperparameters = search.get_hyperparams()
     
     # Build and train the final model using the mathematically optimal hyperparameters
-    epochs, alpha = search.best_candidates
-    model = LogisticRegression(epochs=int(epochs), alpha=round(alpha, 2))
+    print("Training improved model...")
+    # epochs, alpha = hyperparameters
+    model = LogisticRegression(hyperparameters)
     model.fit(x_train, y_train)
     
     # Serialize the optimized model for future inference
+    print("serializing final model...")
     save_model(model)
     
+    # print stats about final model
     final_profit = eval_profit(model, test_set)
-    
-    print("Model's performance and results:")
-    print("=" * 50)
-    print(f"Accuracy = {ACCURACY:.2%}")
-    print(f"Sensitivity = {SENSITIVITY:.2%}")
-    print(f"Specificity = {SPECIFICITY:.2%}")
-    print("-"* 50)
-    print(f"Optimal Hyperparameters: {int(search.best_candidates[0])}, {search.best_candidates[1]:.2f}")
-    print(f"Final profit: {final_profit:,.2f}")
-    print("=" * 50)
+    print_stats("Final model", hyperparameters, final_profit)
     
     
     
