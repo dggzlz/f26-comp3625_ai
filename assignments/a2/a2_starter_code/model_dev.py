@@ -71,11 +71,22 @@ def eval_profit(model, test_sets: tuple, limit=COVER_LIMIT):
     # Select top customers until the cumulative coverage hits the $100M company limit
     profitable_customers = np.cumsum(v_coverage[idx]) <= limit
     
-    # Tally the actual premiums collected from the accepted customers
+    # Sum up the actual premiums collected from the accepted customers
     money_in = v_premium[idx][profitable_customers].sum()
     
-    # Tally the actual payouts based on the ground-truth claims (y_test)
-    money_out = ((((y_test.to_numpy())[viable])[idx])[profitable_customers] * v_coverage[idx][profitable_customers]).sum()
+    # Filter actual viable customers
+    actual_filtered = (((y_test.to_numpy())[viable])[idx]) 
+    
+    # Select only profitable customer
+    actual_profitable = actual_filtered[profitable_customers]
+    
+    # Get the policy payout amounts for the accepted customers
+    payout_amt = v_coverage[idx][profitable_customers]
+    
+    # Sum up the actual payouts based on the ground-truth claims (y_test)
+    money_out = (actual_profitable * payout_amt).sum()
+    
+    # return actual profit
     return money_in - money_out    
 
 def train_and_eval(params, train_set, test_set):
@@ -192,7 +203,7 @@ if __name__ == "__main__":
     model.fit(x_train, y_train)
     
     # Serialize the optimized model for future inference
-    print("serializing final model...")
+    print("Serializing final model...")
     save_model(model)
     
     # print stats about final model
