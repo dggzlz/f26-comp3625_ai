@@ -31,6 +31,7 @@ or use stratofy), or simply feeding it a larger dataset.
 
 Question 3:
 In this assignment scenario, which party is acting according to the principle of maximum expected utililty? The customer? Your program? Both?
+
 In this case, the customer is acting in accordance to the principle of maximum expected utility.
 The customer is evaluating and comparing whether is worth going uninsured vs going insured. [line 74: utility.py].
 On the other hand, the program only cares for profitabality. the program is comparing the benefits of insuring a set of

@@ -19,22 +19,22 @@ financial viability based on a logarithmic expected utility premium structure.
 import pandas as pd
 import numpy as np
 import pickle
-from sklearn.model_selection import train_test_split
 from utility import set_premiums, expected_utility_uninsured, max_acceptable_premium
-from search import SimAnnealing
+from Search import SimAnnealing
 from LogisticRegression import LogisticRegression
 import time
 
 # standard way of keeping randomness the same at every run
 np.random.seed(42)
 
-ACCURACY = 0     # Metric
-SENSITIVITY = 0  # Metric
-SPECIFICITY = 0  # Metric
-THRESHOLD = 0.50 # Std. Logistic Regression threshold
-SPLIT = 0.666    # Data 67/33 split
+ACCURACY = 0              # Metric
+SENSITIVITY = 0           # Metric
+SPECIFICITY = 0           # Metric
+THRESHOLD = 0.45          # Std. Logistic Regression threshold
+SPLIT = 0.666             # Data 67/33 split
+PROFIT_TARGET = 100000000 # Desired profit
 
-def eval_profit(model, test_sets: tuple, limit=100000000):
+def eval_profit(model, test_sets: tuple, limit=PROFIT_TARGET):
     """
     Evaluates the financial performance of a trained model on testing data 
     by calculating total profit, capped by a maximum cumulative coverage limit.
@@ -148,13 +148,15 @@ if __name__ == "__main__":
     # separate into features (X) and classes (y), for training and test sets
     x_train = customer_data_df.loc[train_idx]
     y_train = customer_claims_df.loc[train_idx]
-    test_set = (customer_data_df.loc[~train_idx], customer_claims_df.loc[~train_idx])
+    x_test = customer_data_df.loc[~train_idx]
+    y_test = customer_claims_df.loc[~train_idx]
 
     # -- TRAINING & TESTING --
     # Establish a baseline model using default hyperparameters
     model = LogisticRegression()
-    model.fit(x_train, y_train)   
-
+    model.fit(x_train, y_train) 
+    
+    test_set = (x_test, y_test)
     # Wrap the training function so Simulated Annealing can pass in random parameters
     wrapper = lambda params: train_and_eval(params, (x_train, y_train), test_set)
     
