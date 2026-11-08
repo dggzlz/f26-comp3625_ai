@@ -35,3 +35,15 @@ In this case, the customer is acting in accordance to the principle of maximum e
 The customer is evaluating and comparing whether is worth going uninsured vs going insured. [line 74: utility.py].
 On the other hand, the program only cares for profitabality. the program is comparing the benefits of insuring a set of
 customers vs how much it would cost them to insure said set of customers. 
+
+
+Additional Notes:
+
+Initially we decided to go for KNN model instead of Logistic Regression. For KNN we decided to use a search
+algorithm that scales each feature depending on the importance of it, e.g. age might be not as relevant as income, so the algorithm would
+set a factor for each, making age less important. Once built, we ran into the problem where the algorithm was taking too long,
+just in the initial base run. The main reason for this is that KNN is sensitive to dimensions, i.e. the bigger the list of features (dimensions) 
+the longer it would take for the model to run. We decided to add a feature selection algorithm, but realized that the main problem was the first 
+run with the initial 21. This was the major bottleneck. Furthermore, we tested sklearn's KNN and ran the first base model in ~1 second. 
+Sklearn's model uses specialized, more complex data structures that are out of the scope of the class, for this reason we decided to pivot to 
+Logistic Regression, which works pretty well, since Logistic Regression does not get affected bythe dimensionality problem.

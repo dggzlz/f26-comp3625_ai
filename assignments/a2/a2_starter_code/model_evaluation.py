@@ -8,10 +8,10 @@ from LogisticRegression import LogisticRegression
 LIMIT = 100_000_000
 
 def load_model():
+    """Loads serialized model to program"""
     model_path = "./model/final_model.pkl" if os.path.exists("./model/final_model.pkl") else "final_model.pkl"
     with open(model_path, "rb") as f:
         return pickle.load(f)
-
 
 def set_premium(customer_data: pd.DataFrame) -> pd.DataFrame:
     """
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     selected_coverage = test_df.loc[accepted_customers, "coverage_amount"].sum()
     total_premiums = results.loc[accepted_customers, "premium"].sum()
 
-    print(f"Total customers evaluated: {len(test_df)}")
+    print(f"Total customers evaluated: {len(test_df):,}")
     print(f"Total customers selected:  {total_selected}")
     print(f"Total coverage: ${selected_coverage:,.2f} / ${LIMIT:,.2f}")
     print(f"Under $100M cap satisfied: {selected_coverage <= LIMIT}")
