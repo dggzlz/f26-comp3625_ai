@@ -17,7 +17,7 @@ Question 2:
 How confident are you that your model has not overfit the historical data? Why?
 
 If you look at the sensitivity, you can notice the model is scoring less than 7%. 
-In the context of the problem, the model is only capturing ~7% of clients who actually 
+In the context of the problem, the model is only capturing ~15% of clients who actually 
 made a claim. The model is basically playing it safe, by assigning zeros to the customers.
 Moreover, after doing some data exploration, we noticed that the claim class has a ratio of ~33% 1s, and ~66% 0s.
 This explains why the sensitivity is low. The model learned that it is safest to assume that a client won't make a claim.
