@@ -57,7 +57,8 @@ def set_premium(customer_data: pd.DataFrame) -> pd.DataFrame:
             desired_customer[i] = True
             total_coverage += coverage[i]
 
-    result = pd.DataFrame()
+    # Use the same row labels as the input so each result lines up with its customer
+    result = pd.DataFrame(index=customer_data.index)
     result["p_claim"] = p_claim
     result["desired_customer"] = desired_customer
     result["premium"] = premium

@@ -1,7 +1,12 @@
 Question 0:
 Report the line number(s) where your program performs utility calculations
 
-From utility.py file, line 18
+All in utility.py:
+- line 18:     the utility curve, U($) = -263.31 + 22.09 ln($ + 150,000)
+- lines 30-32: expected utility of going uninsured, p * U(-coverage) + (1 - p) * U(0)
+- line 49:     maximum premium the customer would accept (solves U(-premium) = expected utility uninsured)
+- line 70:     premium is capped below that maximum, so the customer always gets a utility benefit
+- line 74:     the explicit check that insuring gives more utility than going uninsured, U(-premium) > EU(uninsured)
 
 Question 1:
 The supervised learning model you used: report its accuracy, sensitivity, and specificity in predicting claims.
@@ -16,25 +21,31 @@ Refer to `get_metrics` function from lines 113-137 in model_dev.py
 Question 2:
 How confident are you that your model has not overfit the historical data? Why?
 
-If you look at the sensitivity, you can notice the model is scoring roughly 15%. 
-In the context of the problem, the model is only capturing ~15% of clients who actually 
+We are confident the model has not overfit, since it scores almost the same on the training set as on the test set
+(accuracy 66.75% vs 67.57%, sensitivity 15.21% vs 15.46%, specificity 92.87% vs 93.39%, printed at lines 213-220
+in model_dev.py). An overfit model would score much better on the data it was trained on.
+
+If you look at the sensitivity, you can notice the model is scoring roughly 15%.
+In the context of the problem, the model is only capturing ~15% of clients who actually
 made a claim. The model is basically playing it safe, by assigning zeros to the customers.
 Moreover, after doing some data exploration, we noticed that the claim class has a ratio of ~33% 1s, and ~66% 0s.
 This explains why the sensitivity is low. The model learned that it is safest to assume that a client won't make a claim.
 
-Based on this, we strongly believe the model is underfitting. The model doesn't have enough context of 
-the problem, and for that reason is playing safe. Some ways to improve the model would be to change the 
-math (e.g. changing threshold [line 125: model_dev.py] for getting metrics), splitting the dataset differently (different percentages, 
-or use stratofy), or simply feeding it a larger dataset.
+Based on this, we strongly believe the model is underfitting rather than overfitting. The model doesn't have enough context of
+the problem, and for that reason is playing safe. Some ways to improve the model would be to change the
+math (e.g. changing threshold [line 125: model_dev.py] for getting metrics), splitting the dataset differently (different percentages,
+or use stratify), or simply feeding it a larger dataset.
 
 
 Question 3:
 In this assignment scenario, which party is acting according to the principle of maximum expected utililty? The customer? Your program? Both?
 
-In this case, the customer is acting in accordance to the principle of maximum expected utility.
-The customer is evaluating and comparing whether is worth going uninsured vs going insured. [line 74: utility.py].
-On the other hand, the program only cares for profitabality. the program is comparing the benefits of insuring a set of
-customers vs. how much it would cost them to insure said set of customers. 
+In this case, both are acting in accordance to the principle of maximum expected utility.
+The customer is evaluating and comparing whether it is worth going uninsured vs going insured. [line 74: utility.py].
+On the other hand, the program only cares for profitability. The program is comparing the benefits of insuring a set of
+customers vs. how much it would cost them to insure said set of customers [line 77: utility.py]. Maximizing expected
+profit is the same as maximizing expected utility when every dollar is worth the same, so the program follows the
+principle too, it just doesn't fear risk the way the customer does.
 
 
 Additional Notes:

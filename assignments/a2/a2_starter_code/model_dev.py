@@ -209,7 +209,15 @@ if __name__ == "__main__":
     # print stats about final model
     final_profit = eval_profit(model, test_set)
     print_stats("Final model", hyperparameters, final_profit)
-    
+
+    # -- OVERFITTING CHECK --
+    # Compare metrics on the training set with the test set above.
+    # Similar scores mean the model generalizes instead of memorizing the training data
+    get_metrics(model.predict_proba(x_train), y_train)
+    print("\nFinal model on training set (compare with test set above)")
+    print(f"Accuracy = {ACCURACY:.2%}")
+    print(f"Sensitivity = {SENSITIVITY:.2%}")
+    print(f"Specificity = {SPECIFICITY:.2%}")
     
     
     
