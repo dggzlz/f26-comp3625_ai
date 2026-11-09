@@ -63,31 +63,4 @@ def set_premium(customer_data: pd.DataFrame) -> pd.DataFrame:
     result["desired_customer"] = desired_customer
     result["premium"] = premium
 
-    return result 
-
-if __name__ == "__main__":
-
-    data_path = "data/customer_data.csv" if os.path.exists("data/customer_data.csv") else "customer_data.csv"
-    test_df = pd.read_csv(data_path)
-
-    # Testing
-    # n = LIMIT
-    # print("\n--- Testing on n amount of customers ---")
-    # sample_df = test_df.iloc[:n].copy()
-    # sample_results = set_premium(sample_df)
-    # print(sample_results)
-    # print(sample_results["desired_customer"].value_counts())
-
-    print("\n--- Model Evaluation ---")
-    results = set_premium(test_df)
-
-    accepted_customers = results["desired_customer"]
-    total_selected = accepted_customers.sum()
-    selected_coverage = test_df.loc[accepted_customers, "coverage_amount"].sum()
-    total_premiums = results.loc[accepted_customers, "premium"].sum()
-
-    print(f"Total customers evaluated: {len(test_df):,}")
-    print(f"Total customers selected:  {total_selected}")
-    print(f"Total coverage: ${selected_coverage:,.2f} / ${LIMIT:,.2f}")
-    print(f"Under $100M cap satisfied: {selected_coverage <= LIMIT}")
-    print(f"Total premiums collected:  ${total_premiums:,.2f}") 
+    return result

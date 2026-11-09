@@ -18,6 +18,7 @@ financial viability based on a logarithmic expected utility premium structure.
 
 import pandas as pd
 import numpy as np
+import os
 import pickle
 from utility import set_premiums, expected_utility_uninsured, max_acceptable_premium
 from Search import SimAnnealing
@@ -26,11 +27,9 @@ from LogisticRegression import LogisticRegression
 # standard way of keeping randomness the same at every run
 np.random.seed(42)
 
-ACCURACY = 0              # Metric
-SENSITIVITY = 0           # Metric
-SPECIFICITY = 0           # Metric
-THRESHOLD = 0.45          # Logistic Regression threshold
-SPLIT = 0.666             # Data 67/33 split
+THRESHOLD = 0.50          # Logistic Regression threshold
+SPLIT_TRAIN = 0.60        # 60% training
+SPLIT_VALID = 0.50        # 50/50 on remaining data after train split
 COVER_LIMIT = 100_000_000 # Max. budget for coverage
 
 def eval_profit(model, test_sets: tuple, limit=COVER_LIMIT):
@@ -52,9 +51,6 @@ def eval_profit(model, test_sets: tuple, limit=COVER_LIMIT):
     p_claims = model.predict_proba(x_test)
     coverage = x_test['coverage_amount'].to_numpy()
     premium, viable = set_premiums(p_claims, coverage)
-    
-    # calculates Model's metrics
-    get_metrics(p_claims, y_test)
 
     # Filter arrays to only include policies that are economically viable for both parties 
     # (v as viable)
@@ -118,11 +114,10 @@ def get_metrics(probs, actual):
     probs: np.ndarray - An array of predicted probabilities (floats between 0.0 and 1.0) output by the model.
     actual: np.ndarray - An boolean or integer array of true class labels (1 for claim, 0 for no claim).
     """
-    # refer to globals
-    global ACCURACY, SENSITIVITY, SPECIFICITY
     
     # Convert probabilities to binary predictions based on standard Logistic Regression threshold
     prediction = probs >= THRESHOLD
+    actual = actual.astype(bool)
     
     # Calculate confusion matrix components using vectorized bitwise operations
     TP = prediction & actual     # True Positive: Predicted 1, Actual 1
@@ -132,9 +127,11 @@ def get_metrics(probs, actual):
 
     # Calculate final percentages using .mean() and .sum() to aggregate the boolean arrays
     # Update global variables
-    ACCURACY = (prediction == actual).mean()
-    SENSITIVITY = TP.sum() / (TP + FN).sum()
-    SPECIFICITY = TN.sum() / (TN + FP).sum()
+    acc = (prediction == actual).mean()
+    sens = TP.sum() / (TP + FN).sum()
+    spec = TN.sum() / (TN + FP).sum()
+    
+    return acc, sens, spec
 
 def save_model(model):
     """
@@ -143,17 +140,20 @@ def save_model(model):
     Parameters:
     model : LogisticRegression - The optimized model object to save.
     """
+    os.makedirs("./model", exist_ok=True)
     with open("./model/final_model.pkl", "wb") as f:
         pickle.dump(model, f)
 
-def print_stats(model_title, hyperparams, profit):
+def print_stats(model_title, hyperparams, profit, probs, y_class):
     """Helper function to print models stats"""
+    
+    accuracy, sensitivity, specificity = get_metrics(probs, y_class)
     
     print(f"\n{model_title}'s performance")
     print("=" * 50)
-    print(f"Accuracy = {ACCURACY:.2%}")
-    print(f"Sensitivity = {SENSITIVITY:.2%}")
-    print(f"Specificity = {SPECIFICITY:.2%}")
+    print(f"Accuracy = {accuracy:.2%}")
+    print(f"Sensitivity = {sensitivity:.2%}")
+    print(f"Specificity = {specificity:.2%}")
     print("-"* 50)
     print("Hyperparameters:", hyperparams)
     print(f"Profit: {profit:,.2f}")
@@ -165,14 +165,23 @@ if __name__ == "__main__":
     customer_data_df = pd.read_csv('data/customer_data.csv', index_col=None)
     customer_claims_df = pd.read_csv('data/customer_claims.csv', index_col=None)['claim']
     
-    # at random assign instances to train and test sets
-    train_idx = np.random.random(size=customer_data_df.shape[0]) < SPLIT
-
-    # separate into features (X) and classes (y), for training and test sets
+    # at random assign instances to train set
+    train_idx = np.random.random(size=customer_data_df.shape[0]) < SPLIT_TRAIN
     x_train = customer_data_df.loc[train_idx]
     y_train = customer_claims_df.loc[train_idx]
-    x_test = customer_data_df.loc[~train_idx]
-    y_test = customer_claims_df.loc[~train_idx]
+    
+    # create a subset to split into validation and test sets
+    x_subset = customer_data_df.loc[~train_idx]
+    y_subset = customer_claims_df.loc[~train_idx]
+    
+    # split rest of the data
+    valid_idx = np.random.random(size=x_subset.shape[0]) < SPLIT_VALID
+    x_valid = x_subset.loc[valid_idx]
+    y_valid = y_subset.loc[valid_idx]
+    valid_set = (x_valid, y_valid)
+    
+    x_test = x_subset.loc[~valid_idx]
+    y_test = y_subset.loc[~valid_idx]
     test_set = (x_test, y_test)
 
     # -- TRAINING & TESTING --
@@ -182,12 +191,15 @@ if __name__ == "__main__":
     model = LogisticRegression(hyperparameters)
     model.fit(x_train, y_train) 
     initial_profit = eval_profit(model, test_set)
+
+    # Generate probabilities and calculate metrics
+    pred_probs = model.predict_proba(x_test)
     
     # print initial stats
-    print_stats("Base model", hyperparameters, initial_profit)
+    print_stats("Base model", hyperparameters, initial_profit, pred_probs, y_test)
         
     # Wrap the training function so Simulated Annealing can pass in random parameters
-    wrapper = lambda params: train_and_eval(params, (x_train, y_train), test_set)
+    wrapper = lambda params: train_and_eval(params, (x_train, y_train), valid_set)
     
     # Initialize and execute the Simulated Annealing hyperparameter search
     print("\nInitializing hyperparameter optimization...")
@@ -208,16 +220,16 @@ if __name__ == "__main__":
     
     # print stats about final model
     final_profit = eval_profit(model, test_set)
-    print_stats("Final model", hyperparameters, final_profit)
-
+    pred_probs = model.predict_proba(x_test)
+    print_stats("Final model", hyperparameters, final_profit, pred_probs, y_test)
+    
     # -- OVERFITTING CHECK --
     # Compare metrics on the training set with the test set above.
     # Similar scores mean the model generalizes instead of memorizing the training data
-    get_metrics(model.predict_proba(x_train), y_train)
-    print("\nFinal model on training set (compare with test set above)")
-    print(f"Accuracy = {ACCURACY:.2%}")
-    print(f"Sensitivity = {SENSITIVITY:.2%}")
-    print(f"Specificity = {SPECIFICITY:.2%}")
+    train_profit = eval_profit(model, (x_train, y_train))
+    pred_probs = model.predict_proba(x_train)
+    print_stats("Final model on training set", hyperparameters, train_profit, pred_probs, y_train)
+
     
     
     

@@ -14,8 +14,9 @@ class LogisticRegression:
         Initializes the Logistic Regression model with hyperparameters
 
         Parameters:
-        epochs : int - The number of iterations the gradient descent loop will run.
-        alpha : float - The learning rate (step size) for weight updates.
+        hyperparameters: 
+            - epochs : int - The number of iterations the gradient descent loop will run.
+            - alpha : float - The learning rate (step size) for weight updates.
         """
         self.bias = 0
         self.w = None
@@ -42,6 +43,7 @@ class LogisticRegression:
 
         # initialize weights and normalize data
         self.w = np.zeros(X.shape[1])
+        self.bias = 0
         X = self.normalization(X)
         
         # train the model and find best set of w and the bias
@@ -95,4 +97,4 @@ class LogisticRegression:
         Parameters:
         X : np.array - Dataset to normalize.
         """
-        return (X - self.x_min) / (self.x_max - self.x_min)
+        return (X - self.x_min) / (self.x_max - self.x_min + 1e-8)

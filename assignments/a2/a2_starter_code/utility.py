@@ -79,21 +79,3 @@ def set_premiums(p_claim, coverage, margin=0.2):
     # Both economic conditions must be strictly true for the policy to be sold
     viable = customer_benefits & company_profits
     return premium, viable
-
-if __name__ == "__main__":
-    # worked example: 10% chance of claiming on $100,000 coverage
-    p = 0.1
-    coverage = 100000
-
-    premium, viable = set_premiums(p, coverage)
-    print(f"Expected cost:            ${p * coverage:,.2f}")
-    print(f"Max acceptable premium:   ${max_acceptable_premium(p, coverage):,.2f}")
-    print(f"Premium at 20% margin:    ${premium:,.2f}  Viable: {viable}")
-    print(f"U(-premium) = {utility(-premium):.4f} vs EU(uninsured) = {expected_utility_uninsured(p, coverage):.4f}")
-
-    # several customers at once
-    p_claims = np.array([0.0, 0.05, 0.3, 0.9])
-    coverages = np.array([50000, 140000, 70000, 1000])
-    premiums, viable = set_premiums(p_claims, coverages)
-    print(f"\nPremiums: {np.round(premiums, 2)}")
-    print(f"Viable:   {viable}")

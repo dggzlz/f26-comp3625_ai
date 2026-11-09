@@ -6,7 +6,7 @@ class SimAnnealing:
     Uses Simulated Annealing to search for the optimal hyperparameters (epochs, step_size) 
     by maximizing the profit returned by the fitness function.
     """
-    def __init__(self, fitness, T=20000, cooling_rate=0.95, step_size=(50, 0.05), n=100):
+    def __init__(self, fitness, T=20000, cooling_rate=0.95, step_size=(50, 0.05), n=90):
         """
         Initializes the search algorithm.
 
@@ -41,7 +41,7 @@ class SimAnnealing:
         for _ in range(self.iterations): 
         
             # Generate a neighboring solution by applying random Gaussian noise to each hyperparameter
-            candidate_1 = np.random.normal(loc=0.0, scale=self.step_size[0])
+            candidate_1 = round(np.random.normal(loc=0.0, scale=self.step_size[0]))
             candidate_2 = np.random.normal(loc=0.0, scale=self.step_size[1])
             candidates = np.array([candidate_1, candidate_2])
             successor = curr_candidates + candidates

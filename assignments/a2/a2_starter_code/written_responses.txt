@@ -12,29 +12,24 @@ Question 1:
 The supervised learning model you used: report its accuracy, sensitivity, and specificity in predicting claims.
 Refer to specific line numbers where these things are measured.
 
-Accuracy = 67.57%
-Sensitivity = 15.46%
-Specificity = 93.39%
+Accuracy = 47.70%
+Sensitivity = 81.76%
+Specificity = 30.87%
 
-Refer to `get_metrics` function from lines 113-137 in model_dev.py
+Refer to `get_metrics` function from lines 109-134 in model_dev.py
 
 Question 2:
 How confident are you that your model has not overfit the historical data? Why?
 
 We are confident the model has not overfit, since it scores almost the same on the training set as on the test set
-(accuracy 66.75% vs 67.57%, sensitivity 15.21% vs 15.46%, specificity 92.87% vs 93.39%, printed at lines 213-220
+(accuracy 47.70% vs 47.96%, sensitivity 81.76% vs 82.10%, specificity 30.87% vs 30.57%, printed at lines 213-231
 in model_dev.py). An overfit model would score much better on the data it was trained on.
 
-If you look at the sensitivity, you can notice the model is scoring roughly 15%.
-In the context of the problem, the model is only capturing ~15% of clients who actually
-made a claim. The model is basically playing it safe, by assigning zeros to the customers.
-Moreover, after doing some data exploration, we noticed that the claim class has a ratio of ~33% 1s, and ~66% 0s.
-This explains why the sensitivity is low. The model learned that it is safest to assume that a client won't make a claim.
-
-Based on this, we strongly believe the model is underfitting rather than overfitting. The model doesn't have enough context of
-the problem, and for that reason is playing safe. Some ways to improve the model would be to change the
-math (e.g. changing threshold [line 125: model_dev.py] for getting metrics), splitting the dataset differently (different percentages,
-or use stratify), or simply feeding it a larger dataset.
+Moreover, guessing someone is risky when they are safe (a false positive) just means the company lose out on a small premium, 
+guessing someone is safe when they are risky (a false negative) means the company have to pay a huge $100,000 claim. 
+To maximize the $100M budget, the Simulated Annealing algorithm put the model to a high sensitivity (~82%), 
+identifying almost everyone who will make a claim and aggressively rejecting anyone with a chance of risk. 
+This drops the specificity (false positives), but maximizes the absolute financial profit.
 
 
 Question 3:
