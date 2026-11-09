@@ -195,10 +195,10 @@ if __name__ == "__main__":
     baseline = np.array([model.epochs, model.alpha])
     search.run(baseline=baseline)
     hyperparameters = search.get_hyperparams()
-    
+
+    # -- TRAIN FINAL MODEL, EXPORT & RESULTS --
     # Build and train the final model using the mathematically optimal hyperparameters
     print("Training improved model...")
-    # epochs, alpha = hyperparameters
     model = LogisticRegression(hyperparameters)
     model.fit(x_train, y_train)
     
