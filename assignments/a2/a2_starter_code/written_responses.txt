@@ -11,12 +11,12 @@ Accuracy = 67.57%
 Sensitivity = 15.46%
 Specificity = 93.39%
 
-Refer to `get_metrics` function from lines 103-127 in model_dev.py
+Refer to `get_metrics` function from lines 113-137 in model_dev.py
 
 Question 2:
 How confident are you that your model has not overfit the historical data? Why?
 
-If you look at the sensitivity, you can notice the model is scoring less than 7%. 
+If you look at the sensitivity, you can notice the model is scoring roughly 15%. 
 In the context of the problem, the model is only capturing ~15% of clients who actually 
 made a claim. The model is basically playing it safe, by assigning zeros to the customers.
 Moreover, after doing some data exploration, we noticed that the claim class has a ratio of ~33% 1s, and ~66% 0s.
@@ -24,7 +24,7 @@ This explains why the sensitivity is low. The model learned that it is safest to
 
 Based on this, we strongly believe the model is underfitting. The model doesn't have enough context of 
 the problem, and for that reason is playing safe. Some ways to improve the model would be to change the 
-math (e.g. changing threshold [line 115: model_dev.py] for getting metrics), splitting the dataset differently (different percentages, 
+math (e.g. changing threshold [line 125: model_dev.py] for getting metrics), splitting the dataset differently (different percentages, 
 or use stratofy), or simply feeding it a larger dataset.
 
 
@@ -34,7 +34,7 @@ In this assignment scenario, which party is acting according to the principle of
 In this case, the customer is acting in accordance to the principle of maximum expected utility.
 The customer is evaluating and comparing whether is worth going uninsured vs going insured. [line 74: utility.py].
 On the other hand, the program only cares for profitabality. the program is comparing the benefits of insuring a set of
-customers vs how much it would cost them to insure said set of customers. 
+customers vs. how much it would cost them to insure said set of customers. 
 
 
 Additional Notes:
@@ -44,6 +44,6 @@ algorithm that scales each feature depending on the importance of it, e.g. age m
 set a factor for each, making age less important. Once built, we ran into the problem where the algorithm was taking too long,
 just in the initial base run. The main reason for this is that KNN is sensitive to dimensions, i.e. the bigger the list of features (dimensions) 
 the longer it would take for the model to run. We decided to add a feature selection algorithm, but realized that the main problem was the first 
-run with the initial 21. This was the major bottleneck. Furthermore, we tested sklearn's KNN and ran the first base model in ~1 second. 
+run with the initial 21 features. This was the major bottleneck. Furthermore, we tested sklearn's KNN and ran the first base model in ~1 second. 
 Sklearn's model uses specialized, more complex data structures that are out of the scope of the class, for this reason we decided to pivot to 
-Logistic Regression, which works pretty well, since Logistic Regression does not get affected bythe dimensionality problem.
+Logistic Regression, which works pretty well, since Logistic Regression does not get affected by the dimensionality problem.
