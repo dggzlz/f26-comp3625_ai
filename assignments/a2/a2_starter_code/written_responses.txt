@@ -7,9 +7,9 @@ Question 1:
 The supervised learning model you used: report its accuracy, sensitivity, and specificity in predicting claims.
 Refer to specific line numbers where these things are measured.
 
-Accuracy = 67.54%
-Sensitivity = 6.78%
-Specificity = 97.65%
+Accuracy = 67.57%
+Sensitivity = 15.46%
+Specificity = 93.39%
 
 Refer to `get_metrics` function from lines 103-127 in model_dev.py
 
